@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LoginForm from '../components/LoginForm';
+---
+
+<Layout title="Iniciar Sesión">
+  <div class="py-12 flex items-center justify-center">
+    <LoginForm client:load />
+  </div>
+</Layout>

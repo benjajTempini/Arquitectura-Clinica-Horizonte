@@ -1,0 +1,21 @@
+{
+  "name": "clinica-horizonte-migration",
+  "version": "1.0.0",
+  "description": "Script y contenedor ETL para migración de datos legacy a Clínica Horizonte",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "migrate:dry-run": "ts-node src/index.ts --dry-run"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/pg": "^8.11.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,47 @@
+---
+import Navbar from '../components/Navbar';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Sistema de Gestión Clínica y Administrativa — Clínica Horizonte" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — Clínica Horizonte</title>
+  </head>
+  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-teal-500 selection:text-white">
+    <Navbar client:load />
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <slot />
+    </main>
+
+    <footer class="bg-slate-900/80 border-t border-slate-800 text-slate-400 py-6 text-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <span class="font-semibold text-slate-300">Clínica Horizonte</span> — Atención ambulatoria de excelencia (~180 pacientes/día).
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="http://localhost:3000/api/docs" target="_blank" rel="noreferrer" class="text-teal-400 hover:underline">
+            Swagger / OpenAPI 3.x
+          </a>
+          <span class="text-slate-600">|</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Sistema Operativo
+          </span>
+          <span class="text-slate-600">|</span>
+          <span>v1.0.0</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

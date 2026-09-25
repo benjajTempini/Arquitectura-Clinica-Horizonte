@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:17-alpine
+    container_name: clinica_horizonte_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-clinica_horizonte}
+      POSTGRES_USER: ${POSTGRES_USER:-clinica_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ClinicaHorizonteSecurePass2026!}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clinica_admin} -d ${POSTGRES_DB:-clinica_horizonte}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  backend:
+    build:
+      context: ./clinica-horizonte-api
+      dockerfile: Dockerfile
+    container_name: clinica_horizonte_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-clinica_admin}:${POSTGRES_PASSWORD:-ClinicaHorizonteSecurePass2026!}@database:5432/${POSTGRES_DB:-clinica_horizonte}?schema=public
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      JWT_SECRET: ${JWT_SECRET:-clinica-horizonte-ultra-secure-jwt-secret-key-32-chars-minimum}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-8h}
+      CORS_ORIGIN: http://localhost:4321
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/v1/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./clinica-horizonte-app
+      dockerfile: Dockerfile
+    container_name: clinica_horizonte_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4321
+      API_URL: http://backend:3000
+      PUBLIC_API_URL: http://localhost:3000
+    ports:
+      - "${FRONTEND_PORT:-4321}:4321"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  migration:
+    build:
+      context: ./migration
+      dockerfile: Dockerfile
+    container_name: clinica_horizonte_migration
+    profiles: ["migration"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-clinica_admin}:${POSTGRES_PASSWORD:-ClinicaHorizonteSecurePass2026!}@database:5432/${POSTGRES_DB:-clinica_horizonte}?schema=public
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: clinica_horizonte_network

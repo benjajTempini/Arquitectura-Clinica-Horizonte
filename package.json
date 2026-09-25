@@ -1,0 +1,19 @@
+{
+  "name": "arquitectura-clinica-horizonte",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma Integral de Gestión Clínica y Administrativa — Clínica Horizonte",
+  "scripts": {
+    "dev:backend": "npm --prefix clinica-horizonte-api run start:dev",
+    "dev:frontend": "npm --prefix clinica-horizonte-app run dev",
+    "build:backend": "npm --prefix clinica-horizonte-api run build",
+    "build:frontend": "npm --prefix clinica-horizonte-app run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "test:backend": "npm --prefix clinica-horizonte-api run test",
+    "test": "npm run test:backend",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "export:openapi": "npm --prefix clinica-horizonte-api run export:openapi"
+  }
+}

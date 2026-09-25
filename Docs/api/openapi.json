@@ -1,0 +1,1246 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/audit-events": {
+      "get": {
+        "operationId": "AuditController_findAll_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "resource",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de eventos de auditoría"
+          },
+          "403": {
+            "description": "No autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar eventos de auditoría sanitizados (Solo Administradores y Soporte Externo)",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inválidas o cuenta desactivada"
+          }
+        },
+        "summary": "Iniciar sesión y obtener token JWT de acceso",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/patients": {
+      "post": {
+        "operationId": "PatientsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePatientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Paciente registrado exitosamente"
+          },
+          "409": {
+            "description": "Identificador o RUT duplicado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar nuevo paciente",
+        "tags": [
+          "patients"
+        ]
+      },
+      "get": {
+        "operationId": "PatientsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Búsqueda por nombre, apellido, RUT o correo",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de pacientes"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar listado de pacientes con filtros y paginación",
+        "tags": [
+          "patients"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}": {
+      "get": {
+        "operationId": "PatientsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del paciente",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del paciente"
+          },
+          "404": {
+            "description": "Paciente no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar datos de un paciente por ID",
+        "tags": [
+          "patients"
+        ]
+      },
+      "patch": {
+        "operationId": "PatientsController_update_v1",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del paciente",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Paciente actualizado exitosamente"
+          },
+          "404": {
+            "description": "Paciente no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Actualizar información de contacto del paciente",
+        "tags": [
+          "patients"
+        ]
+      }
+    },
+    "/api/v1/professionals": {
+      "get": {
+        "operationId": "ProfessionalsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Listado de profesionales"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar profesionales de la salud activos y sus especialidades",
+        "tags": [
+          "professionals"
+        ]
+      }
+    },
+    "/api/v1/professionals/{professionalId}/availability": {
+      "get": {
+        "operationId": "ProfessionalsController_getAvailability_v1",
+        "parameters": [
+          {
+            "name": "professionalId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del profesional de salud",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Fecha a consultar en formato YYYY-MM-DD",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "specialtyId",
+            "required": false,
+            "in": "query",
+            "description": "Código o UUID de la especialidad",
+            "schema": {
+              "example": "CAR-01",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Franjas horarias y estado de disponibilidad"
+          },
+          "404": {
+            "description": "Profesional no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar disponibilidad de horarios para un profesional y fecha",
+        "tags": [
+          "professionals"
+        ]
+      }
+    },
+    "/api/v1/specialties": {
+      "get": {
+        "operationId": "SpecialtiesController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Especialidades disponibles"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar catálogo de especialidades médicas",
+        "tags": [
+          "specialties"
+        ]
+      }
+    },
+    "/api/v1/appointments": {
+      "post": {
+        "operationId": "AppointmentsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cita creada exitosamente"
+          },
+          "409": {
+            "description": "Conflicto por horario ocupado (APPOINTMENT_OVERLAP)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear una cita médica validando no solapamiento",
+        "tags": [
+          "appointments"
+        ]
+      },
+      "get": {
+        "operationId": "AppointmentsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por fecha específica YYYY-MM-DD",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "professionalId",
+            "required": false,
+            "in": "query",
+            "description": "UUID del profesional",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "required": false,
+            "in": "query",
+            "description": "UUID del paciente",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "PENDING",
+                "CONFIRMED",
+                "ARRIVED",
+                "IN_CONSULTATION",
+                "COMPLETED",
+                "CANCELLED",
+                "NO_SHOW"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de citas"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar agenda de citas con filtros",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}": {
+      "get": {
+        "operationId": "AppointmentsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la cita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle de la cita"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar detalle de una cita",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}/reschedule": {
+      "patch": {
+        "operationId": "AppointmentsController_reschedule_v1",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la cita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cita reprogramada exitosamente"
+          },
+          "409": {
+            "description": "Conflicto por solapamiento con otra cita existente"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reprogramar una cita médica",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}/status": {
+      "patch": {
+        "operationId": "AppointmentsController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la cita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointmentStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado correctamente"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar el estado operativo de una cita médica",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}/payments": {
+      "post": {
+        "operationId": "PaymentsController_create_v1",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la cita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pago registrado exitosamente"
+          },
+          "400": {
+            "description": "Número de bono obligatorio o monto inválido"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar pago o bono para una cita médica",
+        "tags": [
+          "payments"
+        ]
+      },
+      "get": {
+        "operationId": "PaymentsController_findByAppointment_v1",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la cita",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de pagos"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar pagos asociados a una cita",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/{paymentId}/status": {
+      "patch": {
+        "operationId": "PaymentsController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "paymentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del pago",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado del pago actualizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Anular o reembolsar un pago registrado",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/appointments/{appointmentId}/clinical-care": {
+      "post": {
+        "operationId": "ClinicalCareController_create_v1",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la cita médica",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClinicalCareDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Atención clínica registrada exitosamente"
+          },
+          "409": {
+            "description": "La cita ya cuenta con atención clínica (CLINICAL_CARE_EXISTS)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar atención clínica, diagnósticos y tratamientos en una sola transacción",
+        "tags": [
+          "clinical-care"
+        ]
+      }
+    },
+    "/api/v1/patients/{patientId}/clinical-history": {
+      "get": {
+        "operationId": "ClinicalCareController_getHistory_v1",
+        "parameters": [
+          {
+            "name": "patientId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del paciente",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial clínico cronológico"
+          },
+          "404": {
+            "description": "Paciente no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar el historial clínico cronológico autorizado del paciente",
+        "tags": [
+          "clinical-care"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_check_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Servicio operando con normalidad"
+          }
+        },
+        "summary": "Comprobar salud y disponibilidad del backend y base de datos",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Clínica Horizonte API",
+    "description": "API REST para la plataforma Clínica Horizonte: autenticación RBAC, pacientes, agenda, disponibilidad médica, atenciones clínicas, pagos y auditoría.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Comprobación de salud y disponibilidad"
+    },
+    {
+      "name": "auth",
+      "description": "Autenticación y control de accesos"
+    },
+    {
+      "name": "patients",
+      "description": "Gestión de pacientes"
+    },
+    {
+      "name": "professionals",
+      "description": "Profesionales de la salud y disponibilidad"
+    },
+    {
+      "name": "specialties",
+      "description": "Catálogo de especialidades médicas"
+    },
+    {
+      "name": "appointments",
+      "description": "Agenda y citas médicas"
+    },
+    {
+      "name": "payments",
+      "description": "Registro de pagos y bonos"
+    },
+    {
+      "name": "clinical-care",
+      "description": "Ficha y atenciones clínicas"
+    },
+    {
+      "name": "audit",
+      "description": "Auditoría inmutable de eventos sensibles"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Ingrese el token JWT obtenido en /api/v1/auth/login"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@clinicahorizonte.cl",
+            "description": "Correo electrónico corporativo"
+          },
+          "password": {
+            "type": "string",
+            "example": "Clinica2026!",
+            "description": "Contraseña del usuario"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "AuthUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "b819f71c-43f1-4db8-b593-3d0cf3a9486c"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@clinicahorizonte.cl"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Administrador"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Sistema"
+          },
+          "roles": {
+            "example": [
+              "ADMIN"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "roles"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "description": "JWT Access Token"
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 28800,
+            "description": "Expiración en segundos"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUserDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "user"
+        ]
+      },
+      "CreatePatientDto": {
+        "type": "object",
+        "properties": {
+          "nationalId": {
+            "type": "string",
+            "example": "15420312-K",
+            "description": "RUT o documento oficial sin puntos con guion"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Carlos Alberto"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Mendoza Peña"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "1982-04-15",
+            "description": "Fecha de nacimiento YYYY-MM-DD"
+          },
+          "gender": {
+            "type": "string",
+            "example": "MASCULINO",
+            "enum": [
+              "MASCULINO",
+              "FEMENINO",
+              "OTRO"
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "example": "+56 9 8765 4321"
+          },
+          "email": {
+            "type": "string",
+            "example": "carlos.mendoza@ejemplo.cl"
+          },
+          "address": {
+            "type": "string",
+            "example": "Av. Providencia 1240, Dpto 502"
+          },
+          "emergencyContact": {
+            "type": "string",
+            "example": "Patricia Peña (Madre) +56 9 1111 2222"
+          }
+        },
+        "required": [
+          "nationalId",
+          "firstName",
+          "lastName",
+          "birthDate",
+          "gender",
+          "phone",
+          "email"
+        ]
+      },
+      "UpdatePatientDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+56 9 8765 4321"
+          },
+          "email": {
+            "type": "string",
+            "example": "nuevo.correo@ejemplo.cl"
+          },
+          "address": {
+            "type": "string",
+            "example": "Nueva Dirección 456"
+          },
+          "emergencyContact": {
+            "type": "string",
+            "example": "Contacto actualizado +56 9 9999 8888"
+          }
+        }
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "example": "b1234567-89ab-cdef-0123-456789abcdef",
+            "description": "UUID del paciente"
+          },
+          "professionalId": {
+            "type": "string",
+            "example": "c1234567-89ab-cdef-0123-456789abcdef",
+            "description": "UUID del profesional"
+          },
+          "specialtyId": {
+            "type": "string",
+            "example": "d1234567-89ab-cdef-0123-456789abcdef",
+            "description": "UUID de la especialidad"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "2026-09-28T09:00:00.000Z",
+            "description": "Fecha y hora de inicio ISO 8601"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "2026-09-28T09:20:00.000Z",
+            "description": "Fecha y hora de término ISO 8601"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Control rutinario de presión"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Paciente prefiere atención puntual por traslado"
+          }
+        },
+        "required": [
+          "patientId",
+          "professionalId",
+          "specialtyId",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "RescheduleAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "example": "2026-09-29T10:00:00.000Z",
+            "description": "Nueva fecha y hora de inicio ISO 8601"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "2026-09-29T10:20:00.000Z",
+            "description": "Nueva fecha y hora de término ISO 8601"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Paciente solicitó cambio de turno laboral"
+          }
+        },
+        "required": [
+          "startTime",
+          "endTime"
+        ]
+      },
+      "UpdateAppointmentStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "ARRIVED",
+              "IN_CONSULTATION",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ],
+            "example": "CONFIRMED",
+            "description": "Nuevo estado: PENDING, CONFIRMED, ARRIVED, IN_CONSULTATION, COMPLETED, CANCELLED, NO_SHOW"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Cancelado por el paciente con 24 horas de antelación."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 15000,
+            "description": "Monto pagado en pesos chilenos (>= 0)"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "DEBIT_CARD",
+              "CREDIT_CARD",
+              "BONO_FONASA",
+              "BONO_ISAPRE",
+              "TRANSFER"
+            ],
+            "example": "BONO_FONASA",
+            "description": "Método de pago: CASH, DEBIT_CARD, CREDIT_CARD, BONO_FONASA, BONO_ISAPRE, TRANSFER"
+          },
+          "voucherNumber": {
+            "type": "string",
+            "example": "FONASA-994821",
+            "description": "Número de bono oficial (Obligatorio si el método es BONO)"
+          },
+          "payerName": {
+            "type": "string",
+            "example": "Juan Pablo Araya"
+          },
+          "transactionReference": {
+            "type": "string",
+            "example": "TX-492019"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Pago en mesón recepción 1"
+          }
+        },
+        "required": [
+          "amount",
+          "method"
+        ]
+      },
+      "UpdatePaymentStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PAID",
+              "CANCELLED",
+              "REFUNDED"
+            ],
+            "example": "REFUNDED",
+            "description": "Nuevo estado financiero: PAID, CANCELLED, REFUNDED"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Reembolso por anulación de cita"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "DiagnosisDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "I10",
+            "description": "Código de diagnóstico CIE-10"
+          },
+          "description": {
+            "type": "string",
+            "example": "Hipertensión esencial (primaria)"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRIMARY",
+              "SECONDARY",
+              "PRESUMPTIVE",
+              "CONFIRMED"
+            ],
+            "example": "PRIMARY"
+          }
+        },
+        "required": [
+          "code",
+          "description",
+          "type"
+        ]
+      },
+      "TreatmentDto": {
+        "type": "object",
+        "properties": {
+          "medication": {
+            "type": "string",
+            "example": "Losartán Potásico"
+          },
+          "dosage": {
+            "type": "string",
+            "example": "50 mg"
+          },
+          "frequency": {
+            "type": "string",
+            "example": "Cada 24 horas (mañana)"
+          },
+          "durationDays": {
+            "type": "number",
+            "example": 30,
+            "description": "Duración en días"
+          },
+          "instructions": {
+            "type": "string",
+            "example": "Tomar con abundante agua en ayunas."
+          }
+        },
+        "required": [
+          "medication",
+          "dosage",
+          "frequency",
+          "durationDays"
+        ]
+      },
+      "CreateClinicalCareDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Control rutinario por sospecha de hipertensión"
+          },
+          "anamnesis": {
+            "type": "string",
+            "example": "Paciente refiere mareos leves ocasionales en las tardes."
+          },
+          "physicalExam": {
+            "type": "string",
+            "example": "Paciente lúcido, hidratado. Examen pulmonar normal."
+          },
+          "vitalSigns": {
+            "type": "string",
+            "example": "{\"pa\": \"130/80\", \"fc\": 72, \"temp\": 36.6, \"sat\": 98}"
+          },
+          "indication": {
+            "type": "string",
+            "example": "Disminuir consumo de sal, control en 1 mes."
+          },
+          "diagnoses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiagnosisDto"
+            }
+          },
+          "treatments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreatmentDto"
+            }
+          }
+        },
+        "required": [
+          "reason",
+          "anamnesis",
+          "diagnoses"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,354 @@
+// -----------------------------------------------------------------------------
+// Prisma Schema — Clínica Horizonte
+// Conforme a la Sección 7 del Plan de Trabajo Técnico
+// -----------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum RoleName {
+  ADMIN
+  DOCTOR
+  NURSE
+  RECEPTIONIST
+  ADMINISTRATIVE
+  EXTERNAL_SUPPORT
+  PATIENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  ARRIVED
+  IN_CONSULTATION
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  DEBIT_CARD
+  CREDIT_CARD
+  BONO_FONASA
+  BONO_ISAPRE
+  TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum DiagnosisType {
+  PRIMARY
+  SECONDARY
+  PRESUMPTIVE
+  CONFIRMED
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  CREATE
+  UPDATE
+  DELETE
+  RESCHEDULE
+  CANCEL
+  VIEW_CLINICAL
+  PAYMENT_REGISTER
+  STATUS_CHANGE
+}
+
+// -----------------------------------------------------------------------------
+// Autenticación y Usuarios
+// -----------------------------------------------------------------------------
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime    @updatedAt @db.Timestamptz(6)
+
+  // Relaciones
+  userRoles    UserRole[]
+  patient      Patient?
+  professional Professional?
+  auditEvents  AuditEvent[]
+
+  @@index([email])
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  name        RoleName   @unique
+  description String
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
+
+  userRoles   UserRole[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+// -----------------------------------------------------------------------------
+// Pacientes
+// -----------------------------------------------------------------------------
+
+model Patient {
+  id               String         @id @default(uuid())
+  nationalId       String         @unique // RUT o documento de identidad oficial
+  firstName        String
+  lastName         String
+  birthDate        DateTime       @db.Date
+  gender           String         // MASCULINO, FEMENINO, OTRO
+  phone            String
+  email            String
+  address          String?
+  emergencyContact String?
+  isMigrated       Boolean        @default(false)
+  userId           String?        @unique
+  createdAt        DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(6)
+
+  // Relaciones
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  appointments  Appointment[]
+  clinicalCares ClinicalCare[]
+
+  @@index([nationalId])
+  @@index([email])
+  @@index([lastName, firstName])
+}
+
+// -----------------------------------------------------------------------------
+// Profesionales y Especialidades
+// -----------------------------------------------------------------------------
+
+model Professional {
+  id            String                  @id @default(uuid())
+  licenseNumber String                  @unique // Registro Superintendencia de Salud
+  firstName     String
+  lastName      String
+  phone         String
+  email         String                  @unique
+  isActive      Boolean                 @default(true)
+  userId        String?                 @unique
+  createdAt     DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime                @updatedAt @db.Timestamptz(6)
+
+  // Relaciones
+  user          User?                   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  specialties   ProfessionalSpecialty[]
+  schedules     ProfessionalSchedule[]
+  appointments  Appointment[]
+  clinicalCares ClinicalCare[]
+
+  @@index([licenseNumber])
+  @@index([email])
+}
+
+model Specialty {
+  id              String                  @id @default(uuid())
+  code            String                  @unique // e.g. MED-GEN, CAR-01, PED-01
+  name            String
+  description     String?
+  durationMinutes Int                     @default(20)
+  createdAt       DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime                @updatedAt @db.Timestamptz(6)
+
+  professionals   ProfessionalSpecialty[]
+  appointments    Appointment[]
+
+  @@index([code])
+}
+
+model ProfessionalSpecialty {
+  id             String       @id @default(uuid())
+  professionalId String
+  specialtyId    String
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  specialty    Specialty    @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, specialtyId])
+  @@index([professionalId])
+  @@index([specialtyId])
+}
+
+model ProfessionalSchedule {
+  id                 String       @id @default(uuid())
+  professionalId     String
+  dayOfWeek          Int          // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+  startTime          String       // Formato HH:mm e.g. "08:30"
+  endTime            String       // Formato HH:mm e.g. "17:30"
+  slotDurationMinutes Int         @default(20)
+  isActive           Boolean      @default(true)
+  createdAt          DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime     @updatedAt @db.Timestamptz(6)
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId, dayOfWeek])
+}
+
+// -----------------------------------------------------------------------------
+// Agenda y Citas
+// -----------------------------------------------------------------------------
+
+model Appointment {
+  id             String            @id @default(uuid())
+  patientId      String
+  professionalId String
+  specialtyId    String
+  startTime      DateTime          @db.Timestamptz(6)
+  endTime        DateTime          @db.Timestamptz(6)
+  status         AppointmentStatus @default(PENDING)
+  reason         String?
+  notes          String?
+  createdAt      DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @db.Timestamptz(6)
+
+  // Relaciones
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  professional Professional  @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  specialty    Specialty     @relation(fields: [specialtyId], references: [id], onDelete: Restrict)
+  payments     Payment[]
+  clinicalCare ClinicalCare?
+
+  @@index([professionalId, startTime, endTime])
+  @@index([patientId])
+  @@index([status])
+}
+
+// -----------------------------------------------------------------------------
+// Pagos y Bonos
+// -----------------------------------------------------------------------------
+
+model Payment {
+  id                   String        @id @default(uuid())
+  appointmentId        String
+  amount               Decimal       @db.Decimal(12, 2)
+  method               PaymentMethod
+  status               PaymentStatus @default(PAID)
+  voucherNumber        String?       // Obligatorio si el método es BONO_FONASA o BONO_ISAPRE
+  payerName            String?
+  transactionReference String?
+  notes                String?
+  registeredById       String?
+  createdAt            DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime      @updatedAt @db.Timestamptz(6)
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([appointmentId])
+  @@index([status])
+}
+
+// -----------------------------------------------------------------------------
+// Ficha Clínica y Atenciones
+// -----------------------------------------------------------------------------
+
+model ClinicalCare {
+  id             String      @id @default(uuid())
+  appointmentId  String      @unique // Una cita genera como máximo una atención
+  patientId      String
+  professionalId String
+  reason         String      // Motivo de consulta
+  anamnesis      String      // Anamnesis / Historia de la enfermedad actual
+  physicalExam   String?     // Examen físico
+  vitalSigns     String?     // Signos vitales (PA, FC, Temp, Peso, Talla, SatO2) en formato serializado
+  indication     String?     // Indicaciones generales y seguimiento
+  createdAt      DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime    @updatedAt @db.Timestamptz(6)
+
+  // Relaciones
+  appointment  Appointment  @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  diagnoses    Diagnosis[]
+  treatments   Treatment[]
+
+  @@index([patientId, createdAt])
+  @@index([professionalId])
+}
+
+model Diagnosis {
+  id             String        @id @default(uuid())
+  clinicalCareId String
+  code           String        // Código CIE-10 (e.g. I10, E11, J00) o identificador
+  description    String
+  type           DiagnosisType @default(PRIMARY)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+
+  clinicalCare ClinicalCare @relation(fields: [clinicalCareId], references: [id], onDelete: Cascade)
+
+  @@index([clinicalCareId])
+}
+
+model Treatment {
+  id             String   @id @default(uuid())
+  clinicalCareId String
+  medication     String   // Fármaco o prescripción terapéutica
+  dosage         String   // Dosis e.g. "500 mg"
+  frequency      String   // Frecuencia e.g. "Cada 8 horas"
+  durationDays   Int      // Duración en días e.g. 7
+  instructions   String?  // Indicaciones de administración
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  clinicalCare ClinicalCare @relation(fields: [clinicalCareId], references: [id], onDelete: Cascade)
+
+  @@index([clinicalCareId])
+}
+
+// -----------------------------------------------------------------------------
+// Auditoría de Seguridad
+// -----------------------------------------------------------------------------
+
+model AuditEvent {
+  id         String      @id @default(uuid())
+  userId     String?
+  action     AuditAction
+  resource   String      // e.g. "APPOINTMENT", "PATIENT", "CLINICAL_CARE", "PAYMENT"
+  resourceId String?
+  details    String?     // Datos sanitizados en JSON
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now()) @db.Timestamptz(6)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+}
