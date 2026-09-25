@@ -1,0 +1,38 @@
+services:
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "echo 'Pendiente: scaffold Astro + React' && sleep infinity"
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "4321:4321"
+    depends_on:
+      - backend
+
+  backend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "echo 'Pendiente: scaffold NestJS + Prisma' && sleep infinity"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "******postgres:5432/clinica_horizonte"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: clinica_horizonte
+      POSTGRES_USER: clinica
+      POSTGRES_PASSWORD: clinica
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
