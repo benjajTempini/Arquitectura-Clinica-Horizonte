@@ -1,0 +1,230 @@
+---
+// Componente de Loader Global y Barra de Progreso Empática para Clínica Horizonte
+---
+
+<div id="clinical-global-loader-container" class="pointer-events-none select-none">
+  <!-- Barra de Progreso Superior -->
+  <div
+    id="clinical-progress-bar"
+    class="fixed top-0 left-0 w-0 h-[3px] z-[99999] pointer-events-none transition-all duration-300 ease-out opacity-0"
+    style="background: linear-gradient(90deg, #0d9488 0%, #14b8a6 45%, #2dd4bf 70%, #38bdf8 100%); box-shadow: 0 0 14px rgba(45, 212, 191, 0.8), 0 0 6px rgba(56, 189, 248, 0.6);"
+  >
+    <div
+      class="absolute right-0 top-0 bottom-0 w-8 bg-white/40 blur-[2px] rounded-r-full"
+    ></div>
+  </div>
+
+  <!-- Toast / Píldora Flotante Empática -->
+  <div
+    id="clinical-floating-toast"
+    class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[99998] pointer-events-none transition-all duration-400 ease-out transform translate-y-8 opacity-0 scale-95 max-w-sm"
+  >
+    <div class="p-3.5 rounded-2xl bg-slate-900/95 border border-teal-500/30 shadow-2xl shadow-teal-950/60 backdrop-blur-xl flex items-center gap-3.5">
+      <!-- Icono Médico con Pulsación Activa -->
+      <div class="relative w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 animate-pulse text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-teal-400 animate-ping"></span>
+        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-teal-400"></span>
+      </div>
+
+      <!-- Textos Empáticos Institucionales -->
+      <div class="min-w-0 pr-1">
+        <p class="text-xs font-semibold text-white tracking-tight leading-snug">
+          Estamos trabajando para su comodidad y salud
+        </p>
+        <p
+          id="clinical-toast-message"
+          class="text-[11px] text-teal-300 font-mono truncate mt-0.5"
+        >
+          Sincronizando información clínica en tiempo real...
+        </p>
+      </div>
+
+      <!-- Spinner Circular Clínico -->
+      <div class="w-4 h-4 rounded-full border-2 border-teal-500/20 border-t-teal-400 animate-spin shrink-0 ml-1"></div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const progressBar = document.getElementById('clinical-progress-bar');
+    const toast = document.getElementById('clinical-floating-toast');
+    const messageEl = document.getElementById('clinical-toast-message');
+
+    const REASSURANCE_MESSAGES = [
+      'Estamos trabajando para su comodidad y salud...',
+      'Sincronizando información clínica en tiempo real...',
+      'Validando disponibilidad médica sin solapamientos...',
+      'Verificando seguridad de datos conforme a la Ley N° 20.584...',
+      'Conectando de forma segura con el servidor asistencial...',
+      'Preparando su atención ambulatoria personalizada...',
+    ];
+
+    let progress = 0;
+    let progressTimer = null;
+    let messageCycleTimer = null;
+    let toastDelayTimer = null;
+    let activeOperations = 0;
+    let currentMessageIndex = 0;
+
+    function renderProgress(val) {
+      if (!progressBar) return;
+      progress = val;
+      progressBar.style.width = val + '%';
+    }
+
+    function start(initialMessage) {
+      activeOperations++;
+      if (activeOperations > 1) {
+        if (initialMessage && messageEl) {
+          messageEl.textContent = initialMessage;
+        }
+        return;
+      }
+
+      // Reiniciar estado visual
+      if (progressBar) {
+        progressBar.style.transition = 'width 0.25s ease-out, opacity 0.2s ease-out';
+        progressBar.style.opacity = '1';
+        renderProgress(15);
+      }
+
+      if (messageEl && initialMessage) {
+        messageEl.textContent = initialMessage;
+      } else if (messageEl) {
+        currentMessageIndex = 0;
+        messageEl.textContent = REASSURANCE_MESSAGES[0];
+      }
+
+      // Mostrar toast si la operación supera 180ms para evitar parpadeos en clics instantáneos
+      clearTimeout(toastDelayTimer);
+      toastDelayTimer = setTimeout(function () {
+        if (activeOperations > 0 && toast) {
+          toast.classList.remove('translate-y-8', 'opacity-0', 'scale-95');
+          toast.classList.add('translate-y-0', 'opacity-100', 'scale-100');
+        }
+      }, 180);
+
+      // Simulación de avance suave asintótico
+      clearInterval(progressTimer);
+      progressTimer = setInterval(function () {
+        if (progress < 60) {
+          renderProgress(progress + Math.floor(Math.random() * 8 + 4));
+        } else if (progress < 88) {
+          renderProgress(progress + Math.floor(Math.random() * 4 + 1));
+        } else if (progress < 95) {
+          renderProgress(progress + 0.5);
+        }
+      }, 150);
+
+      // Rotación de mensajes empáticos si toma más de 1.8 segundos
+      clearInterval(messageCycleTimer);
+      messageCycleTimer = setInterval(function () {
+        if (activeOperations > 0 && messageEl) {
+          currentMessageIndex = (currentMessageIndex + 1) % REASSURANCE_MESSAGES.length;
+          messageEl.style.opacity = '0';
+          setTimeout(function () {
+            if (messageEl) {
+              messageEl.textContent = REASSURANCE_MESSAGES[currentMessageIndex];
+              messageEl.style.transition = 'opacity 0.25s ease';
+              messageEl.style.opacity = '1';
+            }
+          }, 200);
+        }
+      }, 2200);
+    }
+
+    function finish() {
+      activeOperations = Math.max(0, activeOperations - 1);
+      if (activeOperations > 0) return;
+
+      clearInterval(progressTimer);
+      clearInterval(messageCycleTimer);
+      clearTimeout(toastDelayTimer);
+
+      if (progressBar) {
+        renderProgress(100);
+        setTimeout(function () {
+          if (progressBar) {
+            progressBar.style.opacity = '0';
+            setTimeout(function () {
+              if (progressBar) {
+                renderProgress(0);
+                progressBar.style.transition = '';
+              }
+            }, 300);
+          }
+        }, 220);
+      }
+
+      if (toast) {
+        toast.classList.remove('translate-y-0', 'opacity-100', 'scale-100');
+        toast.classList.add('translate-y-8', 'opacity-0', 'scale-95');
+      }
+    }
+
+    function setMessage(msg) {
+      if (messageEl && msg) {
+        messageEl.textContent = msg;
+      }
+    }
+
+    // Exponer API global
+    window.ClinicalLoader = {
+      start: start,
+      finish: finish,
+      setMessage: setMessage,
+    };
+
+    // Escuchar eventos globales de la aplicación
+    window.addEventListener('clinical:loading:start', function (e) {
+      start(e.detail && e.detail.message);
+    });
+
+    window.addEventListener('clinical:loading:end', function () {
+      finish();
+    });
+
+    // Finalizar loader cuando el DOM y recursos estén listos
+    window.addEventListener('pageshow', function () {
+      finish();
+    });
+
+    // Interceptar clics en enlaces internos para feedback inmediato sin espera perceptible
+    document.addEventListener('click', function (e) {
+      const anchor = e.target.closest('a');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      const target = anchor.getAttribute('target');
+      const download = anchor.getAttribute('download');
+
+      // Solo interceptar enlaces internos reales (no externos, no nuevas pestañas, no anclas locales)
+      if (
+        href &&
+        !href.startsWith('#') &&
+        !href.startsWith('mailto:') &&
+        !href.startsWith('tel:') &&
+        !href.startsWith('javascript:') &&
+        target !== '_blank' &&
+        download === null &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.shiftKey
+      ) {
+        const isInternal =
+          href.startsWith('/') || href.startsWith(window.location.origin);
+        if (isInternal && href !== window.location.pathname) {
+          start('Cargando módulo de atención ambulatoria...');
+        }
+      }
+    });
+
+    window.addEventListener('beforeunload', function () {
+      start('Estamos trabajando para su comodidad y salud...');
+    });
+  })();
+</script>

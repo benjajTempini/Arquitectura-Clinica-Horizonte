@@ -24,37 +24,14 @@ export default function PatientDirectory() {
   const loadPatients = async (query = '') => {
     setLoading(true);
     try {
-      const res = await patientsService.list(query).catch(() => ({
-        items: [
-          {
-            id: 'pat1',
-            nationalId: '12345678-5',
-            firstName: 'Juan Pablo',
-            lastName: 'Araya Fuentes',
-            birthDate: '1985-06-14',
-            gender: 'MASCULINO',
-            phone: '+56 9 9123 4567',
-            email: 'juan.araya@ejemplo.cl',
-            address: 'Calle Los Alerces 450',
-            emergencyContact: 'Luisa Fuentes (Madre)',
-          },
-          {
-            id: 'pat2',
-            nationalId: '14567890-K',
-            firstName: 'María Ignacia',
-            lastName: 'González Castro',
-            birthDate: '1990-12-03',
-            gender: 'FEMENINO',
-            phone: '+56 9 8234 5678',
-            email: 'maria.gonzalez@ejemplo.cl',
-            address: 'Av. Las Condes 9820',
-            emergencyContact: 'Rodrigo González (Hermano)',
-          },
-        ],
-      }));
+      const res = await patientsService.list(query);
       setPatients(res.items || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setMessage({
+        type: 'error',
+        text: err.message || 'No fue posible consultar el listado de pacientes.',
+      });
+      setPatients([]);
     } finally {
       setLoading(false);
     }
@@ -166,7 +143,13 @@ export default function PatientDirectory() {
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400">
-                    Cargando directorio de pacientes...
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="flex items-center gap-2 text-teal-400">
+                        <div className="w-4 h-4 rounded-full border-2 border-teal-500/20 border-t-teal-400 animate-spin"></div>
+                        <span className="text-xs font-semibold text-white">Estamos trabajando para su comodidad y salud</span>
+                      </div>
+                      <span className="text-[11px] text-teal-300 font-mono">Sincronizando directorio y fichas de pacientes...</span>
+                    </div>
                   </td>
                 </tr>
               ) : patients.length > 0 ? (

@@ -34,7 +34,8 @@ services:
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
       JWT_SECRET: ${JWT_SECRET:-clinica-horizonte-ultra-secure-jwt-secret-key-32-chars-minimum}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-8h}
-      CORS_ORIGIN: http://localhost:4321
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      SEED_ON_STARTUP: ${SEED_ON_STARTUP:-true}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
@@ -58,7 +59,7 @@ services:
       HOST: 0.0.0.0
       PORT: 4321
       API_URL: http://backend:3000
-      PUBLIC_API_URL: http://localhost:3000
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-}
     ports:
       - "${FRONTEND_PORT:-4321}:4321"
     depends_on:

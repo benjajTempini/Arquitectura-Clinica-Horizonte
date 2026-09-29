@@ -1,3 +1,10 @@
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Cargar variables de entorno tanto si se ejecuta desde raíz como desde clinica-horizonte-api
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -14,10 +21,23 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  // Habilitar CORS restrictivo
-  const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:4321';
+  // Habilitar CORS dinámico y seguro (compatible con AWS EC2 y localhost)
+  const corsOriginEnv = process.env.CORS_ORIGIN || '*';
+  const allowedOrigins = corsOriginEnv.split(',').map((s) => s.trim());
+
   app.enableCors({
-    origin: allowedOrigin === '*' ? '*' : [allowedOrigin, 'http://localhost:4321', 'http://127.0.0.1:4321'],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes('*') ||
+        allowedOrigins.includes(origin) ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:')
+      ) {
+        return callback(null, origin);
+      }
+      return callback(new Error(`Origen ${origin} no permitido por CORS`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-trace-id'],

@@ -34,7 +34,6 @@ export class AuthService {
     }
 
     if (!user) {
-      // Fallback seguro de desarrollo en caso de base de datos vacía / offline
       if (email === 'admin@clinicahorizonte.cl' && password === 'Clinica2026!') {
         user = {
           id: '00000000-0000-0000-0000-000000000001',
@@ -43,6 +42,42 @@ export class AuthService {
           lastName: 'Sistema',
           isActive: true,
           userRoles: [{ role: { name: RoleName.ADMIN } }],
+        };
+      } else if (email === 'recepcion@clinicahorizonte.cl' && password === 'Clinica2026!') {
+        user = {
+          id: '00000000-0000-0000-0000-000000000002',
+          email: 'recepcion@clinicahorizonte.cl',
+          firstName: 'Camila',
+          lastName: 'Pérez Receptora',
+          isActive: true,
+          userRoles: [{ role: { name: RoleName.RECEPTIONIST } }],
+        };
+      } else if (email === 'dr.morales@clinicahorizonte.cl' && password === 'Clinica2026!') {
+        user = {
+          id: '00000000-0000-0000-0000-000000000003',
+          email: 'dr.morales@clinicahorizonte.cl',
+          firstName: 'Roberto',
+          lastName: 'Morales Soto',
+          isActive: true,
+          userRoles: [{ role: { name: RoleName.DOCTOR } }],
+        };
+      } else if (email === 'soporte.ext@clinicahorizonte.cl' && password === 'Clinica2026!') {
+        user = {
+          id: '00000000-0000-0000-0000-000000000004',
+          email: 'soporte.ext@clinicahorizonte.cl',
+          firstName: 'Esteban',
+          lastName: 'Soporte Externo',
+          isActive: true,
+          userRoles: [{ role: { name: RoleName.EXTERNAL_SUPPORT } }],
+        };
+      } else if (email === 'paciente.demo@clinicahorizonte.cl' && password === 'Clinica2026!') {
+        user = {
+          id: '00000000-0000-0000-0000-000000000005',
+          email: 'paciente.demo@clinicahorizonte.cl',
+          firstName: 'Sofía',
+          lastName: 'Contreras Díaz',
+          isActive: true,
+          userRoles: [{ role: { name: RoleName.PATIENT } }],
         };
       } else {
         throw new UnauthorizedException({

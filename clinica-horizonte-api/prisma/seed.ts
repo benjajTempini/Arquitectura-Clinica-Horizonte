@@ -82,6 +82,12 @@ async function main() {
       lastName: 'Soporte Externo',
       role: RoleName.EXTERNAL_SUPPORT,
     },
+    {
+      email: 'paciente.demo@clinicahorizonte.cl',
+      firstName: 'Sofía',
+      lastName: 'Contreras Díaz',
+      role: RoleName.PATIENT,
+    },
   ];
 
   const userMap: Record<string, string> = {};
@@ -212,6 +218,18 @@ async function main() {
       address: 'Pasaje San Cristóbal 112',
       emergencyContact: 'Ana Vera (Cónyuge) +56 9 6666 5555',
     },
+    {
+      nationalId: '15824912-K',
+      firstName: 'Sofía',
+      lastName: 'Contreras Díaz',
+      birthDate: new Date('1994-08-19'),
+      gender: 'FEMENINO',
+      phone: '+56 9 8765 4321',
+      email: 'paciente.demo@clinicahorizonte.cl',
+      address: 'Av. Providencia 1820, Depto 502',
+      emergencyContact: 'Gonzalo Contreras (Padre) +56 9 9999 8888',
+      userId: userMap['paciente.demo@clinicahorizonte.cl'],
+    },
   ];
 
   const patientMap: Record<string, string> = {};
@@ -308,6 +326,69 @@ async function main() {
       endTime: futureEndDate,
       status: AppointmentStatus.CONFIRMED,
       reason: 'Evaluación cardiológica por palpitaciones',
+    },
+  });
+
+  // Atenciones y Recetas para Sofía Contreras (Portal del Paciente)
+  const sofiaPastDate = new Date(today);
+  sofiaPastDate.setDate(today.getDate() - 5);
+  sofiaPastDate.setHours(11, 30, 0, 0);
+  const sofiaPastEndDate = new Date(sofiaPastDate);
+  sofiaPastEndDate.setMinutes(sofiaPastEndDate.getMinutes() + 20);
+
+  const sofiaAppt = await prisma.appointment.create({
+    data: {
+      patientId: patientMap['15824912-K'],
+      professionalId: profValenzuela.id,
+      specialtyId: specialtyMap['MED-GEN'],
+      startTime: sofiaPastDate,
+      endTime: sofiaPastEndDate,
+      status: AppointmentStatus.COMPLETED,
+      reason: 'Cuadro respiratorio agudo y tos',
+    },
+  });
+
+  const sofiaCare = await prisma.clinicalCare.create({
+    data: {
+      appointmentId: sofiaAppt.id,
+      patientId: patientMap['15824912-K'],
+      professionalId: profValenzuela.id,
+      reason: 'Rinofaringitis y congestión nasal severa',
+      anamnesis: 'Paciente de 32 años con cuadro de 3 días de evolución, odinofagia, rinorrea y tos seca.',
+      physicalExam: 'Faringe congestiva sin exudados purulentos. Murmullo pulmonar presente sin ruidos agregados.',
+      vitalSigns: JSON.stringify({ pa: '118/75', fc: 78, temp: 37.1, sat: 99, peso: 62.5, talla: 1.64 }),
+      indication: 'Reposo relativo por 48 horas, hidratación abundante, control SOS si fiebre > 38.5°C.',
+    },
+  });
+
+  await prisma.diagnosis.create({
+    data: {
+      clinicalCareId: sofiaCare.id,
+      code: 'J00',
+      description: 'Rinofaringitis aguda (resfriado común)',
+      type: DiagnosisType.CONFIRMED,
+    },
+  });
+
+  await prisma.treatment.create({
+    data: {
+      clinicalCareId: sofiaCare.id,
+      medication: 'Paracetamol',
+      dosage: '500 mg',
+      frequency: 'Cada 8 horas en caso de dolor o fiebre',
+      durationDays: 5,
+      instructions: 'Tomar después de las comidas. Máximo 4 comprimidos al día.',
+    },
+  });
+
+  await prisma.treatment.create({
+    data: {
+      clinicalCareId: sofiaCare.id,
+      medication: 'Desloratadina',
+      dosage: '5 mg',
+      frequency: 'Cada 24 horas (noche)',
+      durationDays: 7,
+      instructions: 'Antihistamínico para congestión nasal.',
     },
   });
 

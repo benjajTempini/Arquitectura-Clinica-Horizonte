@@ -30,22 +30,19 @@ export default function ClinicalEncounter() {
   useEffect(() => {
     async function loadInitial() {
       try {
-        const pats = await patientsService.list().catch(() => ({
-          items: [
-            { id: 'pat1', firstName: 'Juan Pablo', lastName: 'Araya Fuentes', nationalId: '12345678-5' },
-            { id: 'pat2', firstName: 'María Ignacia', lastName: 'González Castro', nationalId: '14567890-K' },
-          ],
-        }));
+        const pats = await patientsService.list();
         setPatients(pats.items || []);
 
-        // Leer si viene ?patientId en la URL
         const urlParams = new URLSearchParams(window.location.search);
         const pid = urlParams.get('patientId') || pats.items?.[0]?.id;
         if (pid) {
           setSelectedPatientId(pid);
         }
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        setMessage({
+          type: 'error',
+          text: err.message || 'Error al cargar lista de pacientes.',
+        });
       }
     }
     loadInitial();
@@ -56,29 +53,24 @@ export default function ClinicalEncounter() {
     setLoading(true);
     try {
       const [hist, appts] = await Promise.all([
-        clinicalCareService.getPatientHistory(patientId).catch(() => [
-          {
-            id: 'cc-1',
-            createdAt: '2026-09-20T10:00:00Z',
-            reason: 'Chequeo médico de rutina',
-            anamnesis: 'Paciente asintomático acude a chequeo preventivo anual.',
-            physicalExam: 'Sin alteraciones relevantes.',
-            indication: 'Mantener hábitos saludables y ejercicio físico regular.',
-            vitalSigns: '{"pa":"120/80","fc":"70","temp":"36.5"}',
-            professional: { firstName: 'Roberto', lastName: 'Morales Soto' },
-            diagnoses: [{ code: 'Z00.0', description: 'Examen médico general' }],
-            treatments: [],
-          },
-        ]),
-        appointmentsService.list({ patientId, status: 'ARRIVED' }).catch(() => ({ items: [] })),
+        clinicalCareService.getPatientHistory(patientId),
+        appointmentsService.list({ patientId }),
       ]);
-      setHistory(hist);
-      setPendingAppointments(appts.items || []);
-      if (appts.items?.length > 0) {
-        setSelectedAppointmentId(appts.items[0].id);
+      setHistory(hist || []);
+      const pending = (appts.items || []).filter((a: any) => !a.clinicalCare);
+      setPendingAppointments(pending);
+      if (pending.length > 0) {
+        setSelectedAppointmentId(pending[0].id);
+      } else {
+        setSelectedAppointmentId('');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setMessage({
+        type: 'error',
+        text: err.message || 'No fue posible cargar el historial del paciente.',
+      });
+      setHistory([]);
+      setPendingAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -110,9 +102,16 @@ export default function ClinicalEncounter() {
     e.preventDefault();
     setMessage(null);
 
-    const apptId = selectedAppointmentId || 'mock-appointment-id';
+    if (!selectedAppointmentId) {
+      setMessage({
+        type: 'error',
+        text: 'Debe seleccionar una cita médica del paciente para asociar la atención clínica. Si el paciente no tiene citas, agende una primero en la sección Agenda.',
+      });
+      return;
+    }
+
     try {
-      await clinicalCareService.create(apptId, {
+      await clinicalCareService.create(selectedAppointmentId, {
         reason,
         anamnesis,
         physicalExam,
@@ -465,9 +464,17 @@ export default function ClinicalEncounter() {
             <div className="pt-4 border-t border-slate-800 flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold text-sm transition shadow-lg shadow-teal-900/30"
+                disabled={loading}
+                className="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 disabled:opacity-60 text-white font-semibold text-sm transition shadow-lg shadow-teal-900/30 flex items-center gap-2"
               >
-                Registrar Atención Clínica
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
+                    <span>Guardando Ficha Clínica...</span>
+                  </>
+                ) : (
+                  'Registrar Atención Clínica'
+                )}
               </button>
             </div>
           </form>

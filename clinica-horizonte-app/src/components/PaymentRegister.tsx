@@ -6,6 +6,7 @@ export default function PaymentRegister() {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState('');
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Formulario Pago
@@ -19,33 +20,20 @@ export default function PaymentRegister() {
   const loadAppointments = async () => {
     setLoading(true);
     try {
-      const res = await appointmentsService.list().catch(() => ({
-        items: [
-          {
-            id: 'appt-101',
-            startTime: '2026-09-28T09:00:00Z',
-            patient: { firstName: 'Juan Pablo', lastName: 'Araya Fuentes', nationalId: '12345678-5' },
-            professional: { firstName: 'Roberto', lastName: 'Morales Soto' },
-            specialty: { name: 'Medicina General' },
-            status: 'ARRIVED',
-          },
-          {
-            id: 'appt-102',
-            startTime: '2026-09-28T10:00:00Z',
-            patient: { firstName: 'María Ignacia', lastName: 'González Castro', nationalId: '14567890-K' },
-            professional: { firstName: 'Carolina', lastName: 'Valenzuela Ríos' },
-            specialty: { name: 'Pediatría' },
-            status: 'CONFIRMED',
-          },
-        ],
-      }));
+      const res = await appointmentsService.list();
       setAppointments(res.items || []);
       if (res.items?.length > 0) {
         setSelectedAppointmentId(res.items[0].id);
         setPayerName(`${res.items[0].patient?.firstName} ${res.items[0].patient?.lastName}`);
+      } else {
+        setSelectedAppointmentId('');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setMessage({
+        type: 'error',
+        text: err.message || 'Error al cargar listado de citas.',
+      });
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -54,20 +42,10 @@ export default function PaymentRegister() {
   const loadPaymentsForAppointment = async (apptId: string) => {
     if (!apptId) return;
     try {
-      const res = await paymentsService.getByAppointment(apptId).catch(() => [
-        {
-          id: 'pay-sample',
-          amount: '15000.00',
-          method: 'BONO_FONASA',
-          status: 'PAID',
-          voucherNumber: 'FONASA-994821',
-          payerName: 'Juan Pablo Araya Fuentes',
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+      const res = await paymentsService.getByAppointment(apptId);
       setPayments(res || []);
     } catch (err) {
-      console.error(err);
+      setPayments([]);
     }
   };
 
@@ -89,12 +67,18 @@ export default function PaymentRegister() {
     e.preventDefault();
     setMessage(null);
 
+    if (!selectedAppointmentId) {
+      setMessage({ type: 'error', text: 'Debe seleccionar una cita médica para registrar el pago o bono.' });
+      return;
+    }
+
     // Validación bono
     if ((method === 'BONO_FONASA' || method === 'BONO_ISAPRE') && (!voucherNumber || voucherNumber.trim().length < 3)) {
       setMessage({ type: 'error', text: 'El número de folio o bono es obligatorio para Fonasa o Isapre.' });
       return;
     }
 
+    setIsProcessing(true);
     try {
       await paymentsService.create(selectedAppointmentId, {
         amount: Number(amount),
@@ -111,6 +95,8 @@ export default function PaymentRegister() {
       setNotes('');
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Error al procesar pago.' });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -267,9 +253,17 @@ export default function PaymentRegister() {
             <div className="pt-4 border-t border-slate-800 flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold text-sm transition shadow-lg shadow-teal-900/30"
+                disabled={isProcessing}
+                className="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 disabled:opacity-60 text-white font-semibold text-sm transition shadow-lg shadow-teal-900/30 flex items-center gap-2"
               >
-                Registrar Pago en Caja
+                {isProcessing ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
+                    <span>Procesando en Caja...</span>
+                  </>
+                ) : (
+                  'Registrar Pago en Caja'
+                )}
               </button>
             </div>
           </form>

@@ -23,13 +23,17 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321
 
-USER node
-
-COPY --chown=node:node package*.json ./
+COPY package*.json ./
 RUN npm ci --only=production
 
-COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --from=builder /app/dist ./dist
+
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 4321
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:4321', (r) => process.exit(r.statusCode < 500 ? 0 : 1))"
 
 CMD ["node", "./dist/server/entry.mjs"]

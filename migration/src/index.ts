@@ -117,8 +117,8 @@ async function runMigration() {
 
     for (const patient of transformed) {
       await client.query(`
-        INSERT INTO "Patient" ("id", "nationalId", "firstName", "lastName", "birthDate", "gender", "phone", "email", "address", "createdAt", "updatedAt")
-        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+        INSERT INTO "Patient" ("id", "nationalId", "firstName", "lastName", "birthDate", "gender", "phone", "email", "address", "isMigrated", "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, true, NOW(), NOW())
         ON CONFLICT ("nationalId") DO UPDATE 
         SET "phone" = EXCLUDED."phone", "email" = EXCLUDED."email", "updatedAt" = NOW();
       `, [patient.nationalId, patient.firstName, patient.lastName, patient.birthDate, patient.gender, patient.phone, patient.email, patient.address]);

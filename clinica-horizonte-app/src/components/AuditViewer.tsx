@@ -6,41 +6,27 @@ export default function AuditViewer() {
   const [health, setHealth] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [resourceFilter, setResourceFilter] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const loadAuditData = async () => {
     setLoading(true);
+    setErrorMessage(null);
     try {
       const [healthData, auditData] = await Promise.all([
         healthService.check().catch(() => ({ status: 'offline', database: 'disconnected' })),
-        auditService.list(50, resourceFilter).catch(() => ({
-          items: [
-            {
-              id: 'ev-1',
-              action: 'LOGIN',
-              resource: 'AUTH',
-              resourceId: 'u-1',
-              createdAt: new Date().toISOString(),
-              ipAddress: '127.0.0.1',
-              user: { email: 'admin@clinicahorizonte.cl', firstName: 'Admin', lastName: 'Sistema' },
-              details: '{"email":"admin@clinicahorizonte.cl","roles":["ADMIN"]}',
-            },
-            {
-              id: 'ev-2',
-              action: 'CREATE',
-              resource: 'APPOINTMENT',
-              resourceId: 'appt-101',
-              createdAt: new Date(Date.now() - 3600000).toISOString(),
-              ipAddress: '127.0.0.1',
-              user: { email: 'recepcion@clinicahorizonte.cl', firstName: 'Camila', lastName: 'Pérez' },
-              details: '{"patientId":"pat-1","professionalId":"prof-1"}',
-            },
-          ],
-        })),
+        auditService.list(50, resourceFilter),
       ]);
       setHealth(healthData);
       setEvents(auditData.items || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err.statusCode === 403) {
+        setErrorMessage(
+          'Acceso restringido: Solo los usuarios con rol ADMINISTRADOR o SOPORTE EXTERNO tienen autorización para auditar los eventos del sistema.',
+        );
+      } else {
+        setErrorMessage(err.message || 'No fue posible consultar los registros de auditoría.');
+      }
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -69,6 +55,18 @@ export default function AuditViewer() {
           Actualizar Registros
         </button>
       </div>
+
+      {errorMessage && (
+        <div className="p-4 rounded-xl text-xs flex items-center justify-between border bg-amber-500/10 border-amber-500/30 text-amber-300">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{errorMessage}</span>
+          </div>
+          <button onClick={() => setErrorMessage(null)} className="font-bold ml-4">✕</button>
+        </div>
+      )}
 
       {/* Monitor de Salud de Servicios */}
       <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -154,7 +152,13 @@ export default function AuditViewer() {
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400 font-sans">
-                    Cargando eventos de auditoría...
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="flex items-center gap-2 text-teal-400">
+                        <div className="w-4 h-4 rounded-full border-2 border-teal-500/20 border-t-teal-400 animate-spin"></div>
+                        <span className="text-xs font-semibold text-white">Estamos trabajando para su comodidad y salud</span>
+                      </div>
+                      <span className="text-[11px] text-teal-300 font-mono">Consultando bitácora de trazabilidad sanitaria y accesos...</span>
+                    </div>
                   </td>
                 </tr>
               ) : events.length > 0 ? (

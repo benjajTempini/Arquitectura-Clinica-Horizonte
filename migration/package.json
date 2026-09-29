@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "start:dev": "ts-node src/index.ts",
     "migrate:dry-run": "ts-node src/index.ts --dry-run"
   },
   "dependencies": {

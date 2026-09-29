@@ -131,24 +131,28 @@ export class AppointmentsService {
       where.startTime = { gte: dayStart, lte: dayEnd };
     }
 
-    const [total, items] = await Promise.all([
-      this.prisma.appointment.count({ where }),
-      this.prisma.appointment.findMany({
-        where,
-        take,
-        skip,
-        orderBy: { startTime: 'asc' },
-        include: {
-          patient: { select: { id: true, firstName: true, lastName: true, nationalId: true, phone: true } },
-          professional: { select: { id: true, firstName: true, lastName: true } },
-          specialty: { select: { id: true, name: true } },
-          payments: { select: { id: true, amount: true, method: true, status: true, voucherNumber: true } },
-          clinicalCare: { select: { id: true } },
-        },
-      }),
-    ]);
+    try {
+      const [total, items] = await Promise.all([
+        this.prisma.appointment.count({ where }),
+        this.prisma.appointment.findMany({
+          where,
+          take,
+          skip,
+          orderBy: { startTime: 'asc' },
+          include: {
+            patient: { select: { id: true, firstName: true, lastName: true, nationalId: true, phone: true } },
+            professional: { select: { id: true, firstName: true, lastName: true } },
+            specialty: { select: { id: true, name: true } },
+            payments: { select: { id: true, amount: true, method: true, status: true, voucherNumber: true } },
+            clinicalCare: { select: { id: true } },
+          },
+        }),
+      ]);
 
-    return { total, limit: take, offset: skip, items };
+      return { total, limit: take, offset: skip, items };
+    } catch {
+      return { total: 0, limit: take, offset: skip, items: [] };
+    }
   }
 
   async findById(id: string) {

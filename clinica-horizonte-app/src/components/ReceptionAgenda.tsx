@@ -34,30 +34,21 @@ export default function ReceptionAgenda() {
     async function init() {
       try {
         const [profs, specs, pats] = await Promise.all([
-          professionalsService.list().catch(() => [
-            { id: 'p1', firstName: 'Roberto', lastName: 'Morales Soto', specialties: [{ specialty: { id: 's1', name: 'Medicina General' } }] },
-            { id: 'p2', firstName: 'Carolina', lastName: 'Valenzuela Ríos', specialties: [{ specialty: { id: 's2', name: 'Pediatría' } }] },
-          ]),
-          specialtiesService.list().catch(() => [
-            { id: 's1', name: 'Medicina General', durationMinutes: 20 },
-            { id: 's2', name: 'Pediatría', durationMinutes: 30 },
-            { id: 's3', name: 'Cardiología', durationMinutes: 30 },
-          ]),
-          patientsService.list().catch(() => ({
-            items: [
-              { id: 'pat1', firstName: 'Juan Pablo', lastName: 'Araya Fuentes', nationalId: '12345678-5' },
-              { id: 'pat2', firstName: 'María Ignacia', lastName: 'González Castro', nationalId: '14567890-K' },
-            ],
-          })),
+          professionalsService.list(),
+          specialtiesService.list(),
+          patientsService.list(),
         ]);
-        setProfessionals(profs);
-        setSpecialties(specs);
+        setProfessionals(profs || []);
+        setSpecialties(specs || []);
         setPatients(pats.items || []);
-        if (profs.length > 0) {
+        if (profs && profs.length > 0) {
           setSelectedProfessional(profs[0].id);
         }
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        setActionMessage({
+          type: 'error',
+          text: err.message || 'Error al conectar con los servicios de Clínica Horizonte.',
+        });
       }
     }
     init();
@@ -69,32 +60,18 @@ export default function ReceptionAgenda() {
     setActionMessage(null);
     try {
       const [avail, appts] = await Promise.all([
-        professionalsService.getAvailability(selectedProfessional, selectedDate).catch(() => ({
-          hasSchedule: true,
-          slots: [
-            { startTime: `${selectedDate}T09:00:00.000Z`, endTime: `${selectedDate}T09:20:00.000Z`, displayTime: '09:00 - 09:20', isAvailable: true },
-            { startTime: `${selectedDate}T09:20:00.000Z`, endTime: `${selectedDate}T09:40:00.000Z`, displayTime: '09:20 - 09:40', isAvailable: false },
-            { startTime: `${selectedDate}T09:40:00.000Z`, endTime: `${selectedDate}T10:00:00.000Z`, displayTime: '09:40 - 10:00', isAvailable: true },
-            { startTime: `${selectedDate}T10:00:00.000Z`, endTime: `${selectedDate}T10:20:00.000Z`, displayTime: '10:00 - 10:20', isAvailable: true },
-          ],
-        })),
-        appointmentsService.list({ professionalId: selectedProfessional, date: selectedDate }).catch(() => ({
-          items: [
-            {
-              id: 'a1',
-              startTime: `${selectedDate}T09:20:00.000Z`,
-              endTime: `${selectedDate}T09:40:00.000Z`,
-              status: 'CONFIRMED',
-              patient: { firstName: 'Juan Pablo', lastName: 'Araya Fuentes', nationalId: '12345678-5' },
-              specialty: { name: 'Medicina General' },
-            },
-          ],
-        })),
+        professionalsService.getAvailability(selectedProfessional, selectedDate),
+        appointmentsService.list({ professionalId: selectedProfessional, date: selectedDate }),
       ]);
       setAvailability(avail);
       setAppointments(appts.items || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setActionMessage({
+        type: 'error',
+        text: err.message || 'No fue posible obtener la disponibilidad para la fecha seleccionada.',
+      });
+      setAvailability(null);
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -228,7 +205,18 @@ export default function ReceptionAgenda() {
         <div className="lg:col-span-1 p-5 rounded-xl bg-slate-900 border border-slate-800">
           <h2 className="text-base font-bold text-white mb-3">Franjas de Disponibilidad</h2>
           {loading ? (
-            <p className="text-xs text-slate-400 py-4">Calculando disponibilidad...</p>
+            <div className="py-4 space-y-2.5 animate-fadeIn">
+              <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 text-xs flex items-center gap-2.5">
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-teal-400/20 border-t-teal-400 animate-spin shrink-0"></div>
+                <span className="text-teal-300 text-[11px] leading-tight">Estamos trabajando para su comodidad y salud. Calculando disponibilidad...</span>
+              </div>
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="h-10 rounded-lg bg-slate-800/40 border border-slate-800 animate-pulse flex items-center justify-between px-3">
+                  <div className="w-14 h-3 rounded bg-slate-700/60"></div>
+                  <div className="w-16 h-5 rounded bg-slate-700/60"></div>
+                </div>
+              ))}
+            </div>
           ) : availability?.slots?.length > 0 ? (
             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
               {availability.slots.map((slot: any, idx: number) => (

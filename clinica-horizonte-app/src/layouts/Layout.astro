@@ -1,11 +1,17 @@
 ---
 import Navbar from '../components/Navbar';
+import NeuralBackground from '../components/NeuralBackground.astro';
+import Footer from '../components/Footer.astro';
+import GlobalProgressLoader from '../components/GlobalProgressLoader.astro';
 
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+
+// Configuración de URL pública de API desde variables de entorno
+const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_URL || '';
 ---
 
 <!doctype html>
@@ -16,32 +22,129 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title} — Clínica Horizonte</title>
+
+    <script is:inline define:vars={{ publicApiUrl }}>
+      window.__PUBLIC_API_URL__ = publicApiUrl;
+
+      // Verificación de sesión y roles en rutas protegidas
+      (function () {
+        const publicPaths = ['/', '/login', '/reservar-hora', '/consultar-cita'];
+        const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+        if (!publicPaths.includes(currentPath)) {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            window.location.href = '/login?redirect=' + encodeURIComponent(currentPath);
+            return;
+          }
+
+          // Verificación de RBAC (Control de Acceso Basado en Roles)
+          try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+              const user = JSON.parse(userStr);
+              const roles = user.roles || [];
+              const isAdmin = roles.includes('ADMIN');
+
+              if (!isAdmin) {
+                const isDoctor = roles.includes('DOCTOR') || roles.includes('NURSE');
+                const isReception = roles.includes('RECEPTIONIST') || roles.includes('ADMINISTRATIVE');
+                const isSupport = roles.includes('EXTERNAL_SUPPORT');
+
+                if (currentPath === '/atencion-clinica' && !isDoctor) {
+                  window.location.href = '/dashboard?denied=atencion-clinica';
+                  return;
+                }
+                if (currentPath === '/pagos' && !isReception) {
+                  window.location.href = '/dashboard?denied=pagos';
+                  return;
+                }
+                if (currentPath === '/auditoria' && !isSupport) {
+                  window.location.href = '/dashboard?denied=auditoria';
+                  return;
+                }
+                if (currentPath === '/pacientes' && !isDoctor && !isReception) {
+                  window.location.href = '/dashboard?denied=pacientes';
+                  return;
+                }
+                if (currentPath === '/agenda' && !isDoctor && !isReception) {
+                  window.location.href = '/dashboard?denied=agenda';
+                  return;
+                }
+              }
+            }
+          } catch (e) {
+            // Silencioso
+          }
+        }
+      })();
+    </script>
   </head>
-  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-teal-500 selection:text-white">
+  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-teal-500 selection:text-white relative">
+    <GlobalProgressLoader />
+    <NeuralBackground />
     <Navbar client:load />
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
       <slot />
     </main>
 
-    <footer class="bg-slate-900/80 border-t border-slate-800 text-slate-400 py-6 text-xs">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <span class="font-semibold text-slate-300">Clínica Horizonte</span> — Atención ambulatoria de excelencia (~180 pacientes/día).
-        </div>
-        <div class="flex items-center gap-4">
-          <a href="http://localhost:3000/api/docs" target="_blank" rel="noreferrer" class="text-teal-400 hover:underline">
-            Swagger / OpenAPI 3.x
-          </a>
-          <span class="text-slate-600">|</span>
-          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Sistema Operativo
-          </span>
-          <span class="text-slate-600">|</span>
-          <span>v1.0.0</span>
-        </div>
-      </div>
-    </footer>
+    <Footer />
+
+    <style is:global>
+      /* Escala Base Visual al 120% para máxima legibilidad clínica y accesibilidad */
+      html {
+        font-size: 17px;
+      }
+      @media (min-width: 640px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 19.2px; /* 16px * 1.20 = 19.2px (Exactamente el 120% de zoom) */
+        }
+      }
+      @media (min-width: 1536px) {
+        html {
+          font-size: 19.5px;
+        }
+      }
+
+      /* Transición suave de entrada de página */
+      main {
+        animation: clinicalPageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes clinicalPageFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Efecto Shimmer para skeletons clínicos */
+      @keyframes clinicalShimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+      .animate-shimmer {
+        background: linear-gradient(
+          90deg,
+          rgba(30, 41, 59, 0.4) 0%,
+          rgba(51, 65, 85, 0.7) 50%,
+          rgba(30, 41, 59, 0.4) 100%
+        );
+        background-size: 200% 100%;
+        animation: clinicalShimmer 2s infinite linear;
+      }
+    </style>
   </body>
 </html>
