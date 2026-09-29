@@ -33,6 +33,7 @@ ENV PORT=3000
 
 # Copiar definiciones y script de entrada
 COPY package*.json ./
+COPY tsconfig*.json ./
 COPY prisma ./prisma/
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
