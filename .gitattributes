@@ -1,0 +1,3 @@
+# Garantizar que scripts shell siempre mantengan terminaciones LF (Unix) para Docker
+*.sh text eol=lf
+*.sql text eol=lf
