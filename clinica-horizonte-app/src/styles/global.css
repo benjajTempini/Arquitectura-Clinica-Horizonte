@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-horizonte-50: #f0fdfa;
+  --color-horizonte-100: #ccfbf1;
+  --color-horizonte-200: #99f6e4;
+  --color-horizonte-300: #5eead4;
+  --color-horizonte-400: #2dd4bf;
+  --color-horizonte-500: #14b8a6;
+  --color-horizonte-600: #0d9488;
+  --color-horizonte-700: #0f766e;
+  --color-horizonte-800: #115e59;
+  --color-horizonte-900: #134e4a;
+}

@@ -15,8 +15,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       await this.$connect();
       this.logger.log('Conexión con PostgreSQL establecida correctamente.');
-    } catch (error) {
-      this.logger.warn(`No se pudo conectar inmediatamente a PostgreSQL: ${error.message}. La base de datos operará en modo contingencia.`);
+    } catch (error: any) {
+      this.logger.warn(`No se pudo conectar inmediatamente a PostgreSQL: ${error?.message || error}. La base de datos operará en modo contingencia.`);
     }
   }
 

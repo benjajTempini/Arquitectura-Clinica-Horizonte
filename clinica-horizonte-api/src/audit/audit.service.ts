@@ -42,8 +42,8 @@ export class AuditService {
           userAgent: params.userAgent,
         },
       });
-    } catch (error) {
-      this.logger.error(`Error guardando evento de auditoría: ${error.message}`);
+    } catch (error: any) {
+      this.logger.error(`Error guardando evento de auditoría: ${error?.message || error}`);
       return null;
     }
   }
