@@ -6,18 +6,18 @@ import PatientLookupWidget from '../components/PatientLookupWidget';
 <Layout title="Consultar Cita Médica Agendada — Clínica Horizonte">
   <div class="max-w-6xl xl:max-w-7xl mx-auto space-y-8 py-4 animate-fadeIn">
     {/* Encabezado y Navegación Rápida */}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
       <div class="space-y-1">
-        <a href="/" class="inline-flex items-center gap-1.5 text-xs text-teal-400 hover:text-teal-300 font-medium transition mb-2">
+        <a href="/" class="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium transition mb-2">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
           <span>Volver al Inicio</span>
         </a>
-        <h1 class="text-3xl font-extrabold text-white tracking-tight">
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
           Consulta y Estado de tu Cita Médica
         </h1>
-        <p class="text-xs sm:text-sm text-slate-400">
+        <p class="text-xs sm:text-sm text-slate-500">
           Ingresa tu RUT para revisar la fecha, horario, facultativo asignado y recomendaciones de atención.
         </p>
       </div>
@@ -25,7 +25,7 @@ import PatientLookupWidget from '../components/PatientLookupWidget';
       <div class="flex items-center gap-2">
         <a
           href="/reservar-hora"
-          class="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow transition flex items-center gap-1.5"
+          class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -39,14 +39,14 @@ import PatientLookupWidget from '../components/PatientLookupWidget';
     <PatientLookupWidget client:load />
 
     {/* Tarjeta de Información y Ubicación */}
-    <div class="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+    <div class="p-6 rounded-3xl bg-white border border-sky-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600 shadow-xs">
       <div class="space-y-1 text-center sm:text-left">
-        <span class="text-white font-semibold block text-sm">¿Deseas modificar o anular tu hora agendada?</span>
-        <p>También puedes comunicarte con nuestra mesa central de atención telefónica al <strong class="text-teal-400 font-mono">+56 2 2840 9200</strong>.</p>
+        <span class="text-slate-900 font-semibold block text-sm">¿Deseas modificar o anular tu hora agendada?</span>
+        <p>También puedes comunicarte con nuestra mesa central de atención telefónica al <strong class="text-blue-600 font-mono">+56 2 2840 9200</strong>.</p>
       </div>
       <a
         href="/#contacto"
-        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition font-medium shrink-0"
+        class="px-4 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 transition font-medium border border-sky-200 shrink-0"
       >
         Ver Ubicación & Horarios
       </a>

@@ -30,13 +30,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       if (typeof res === 'object' && res !== null) {
         const errorObj = res as Record<string, any>;
-        code = errorObj.code || this.getDefaultCodeForStatus(statusCode);
-        message = errorObj.message || exception.message;
+        code = errorObj.code || (Array.isArray(errorObj.message) ? 'VALIDATION_ERROR' : this.getDefaultCodeForStatus(statusCode));
         if (Array.isArray(errorObj.message)) {
           details = errorObj.message;
-          message = 'Error de validación en la solicitud';
+          message = details.length > 0 ? details.join('. ') : 'Error de validación en la solicitud';
         } else if (errorObj.details) {
           details = Array.isArray(errorObj.details) ? errorObj.details : [errorObj.details];
+          message = errorObj.message || exception.message;
+        } else {
+          message = errorObj.message || exception.message;
         }
       } else {
         message = res;

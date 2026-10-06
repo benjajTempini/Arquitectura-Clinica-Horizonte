@@ -1,10 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PaymentMethod } from '@prisma/client';
 
 export class CreatePaymentDto {
   @ApiProperty({ example: 15000, description: 'Monto pagado en pesos chilenos (>= 0)' })
   @IsNotEmpty({ message: 'El monto es obligatorio.' })
+  @Type(() => Number)
   @IsNumber({}, { message: 'El monto debe ser numérico.' })
   @Min(0, { message: 'El monto no puede ser negativo.' })
   amount: number;
@@ -20,7 +22,7 @@ export class CreatePaymentDto {
 
   @ApiPropertyOptional({ example: 'FONASA-994821', description: 'Número de bono oficial (Obligatorio si el método es BONO)' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El número de folio o bono debe ser texto.' })
   voucherNumber?: string;
 
   @ApiPropertyOptional({ example: 'Juan Pablo Araya' })

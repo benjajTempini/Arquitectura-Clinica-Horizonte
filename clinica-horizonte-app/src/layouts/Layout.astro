@@ -16,7 +16,7 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
 ---
 
 <!doctype html>
-<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<html lang="es" class="h-full bg-slate-50 text-slate-800">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="Sistema de Gestión Clínica y Administrativa — Clínica Horizonte" />
@@ -80,7 +80,7 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
       })();
     </script>
   </head>
-  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-teal-500 selection:text-white relative">
+  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white relative bg-slate-50 text-slate-800">
     <GlobalProgressLoader />
     <NeuralBackground />
     <Navbar client:load />
@@ -127,7 +127,7 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
         }
       }
 
-      /* Efecto Shimmer para skeletons clínicos */
+      /* Efecto Shimmer para skeletons clínicos en modo claro */
       @keyframes clinicalShimmer {
         0% {
           background-position: -200% 0;
@@ -139,9 +139,9 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
       .animate-shimmer {
         background: linear-gradient(
           90deg,
-          rgba(30, 41, 59, 0.4) 0%,
-          rgba(51, 65, 85, 0.7) 50%,
-          rgba(30, 41, 59, 0.4) 100%
+          rgba(226, 232, 240, 0.6) 0%,
+          rgba(241, 245, 249, 0.95) 50%,
+          rgba(226, 232, 240, 0.6) 100%
         );
         background-size: 200% 100%;
         animation: clinicalShimmer 2s infinite linear;

@@ -1,10 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, MinLength } from 'class-validator';
 
 export class TreatmentDto {
   @ApiProperty({ example: 'Losartán Potásico' })
   @IsNotEmpty({ message: 'El medicamento o tratamiento es obligatorio.' })
   @IsString()
+  @MinLength(2, { message: 'El nombre del medicamento debe tener al menos 2 caracteres.' })
   medication: string;
 
   @ApiProperty({ example: '50 mg' })
@@ -20,7 +21,7 @@ export class TreatmentDto {
   @ApiProperty({ example: 30, description: 'Duración en días' })
   @IsNotEmpty({ message: 'La duración en días es obligatoria.' })
   @IsInt({ message: 'La duración debe ser un número entero de días.' })
-  @IsPositive({ message: 'La duración debe ser positiva.' })
+  @IsPositive({ message: 'La duración debe ser al menos 1 día.' })
   durationDays: number;
 
   @ApiPropertyOptional({ example: 'Tomar con abundante agua en ayunas.' })

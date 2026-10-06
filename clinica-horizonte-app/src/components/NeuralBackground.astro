@@ -32,13 +32,13 @@
       mouse.y = null;
     });
 
-    // Partículas y colores de alta tecnología clínica
+    // Partículas y colores de alta tecnología clínica (tonos celestes y azul)
     const particles = [];
     const colors = [
-      'rgba(20, 184, 166, ',  // Teal-500
-      'rgba(6, 182, 212, ',   // Cyan-500
-      'rgba(16, 185, 129, ',  // Emerald-500
-      'rgba(45, 212, 191, ',  // Teal-400
+      'rgba(14, 165, 233, ',  // Sky-500 (Celeste)
+      'rgba(2, 132, 199, ',   // Sky-600 (Azul clínico)
+      'rgba(59, 130, 246, ',  // Blue-500 (Azul suave)
+      'rgba(56, 189, 248, ',  // Sky-400 (Celeste luminoso)
     ];
 
     function resize() {
@@ -93,7 +93,7 @@
             const dist = Math.sqrt(distSq);
             const alpha = (1 - dist / maxConnectDist) * 0.16;
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(20, 184, 166, ${alpha})`;
+            ctx.strokeStyle = `rgba(14, 165, 233, ${alpha})`;
             ctx.lineWidth = 0.8;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
@@ -111,7 +111,7 @@
             const mDist = Math.sqrt(mDistSq);
             const mAlpha = (1 - mDist / mouse.maxDist) * 0.32;
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(6, 182, 212, ${mAlpha})`;
+            ctx.strokeStyle = `rgba(2, 132, 199, ${mAlpha})`;
             ctx.lineWidth = 1;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(mouse.x, mouse.y);
@@ -137,8 +137,8 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `${p.colorBase}${currentAlpha})`;
-        ctx.shadowColor = 'rgba(20, 184, 166, 0.4)';
-        ctx.shadowBlur = 6;
+        ctx.shadowColor = 'rgba(14, 165, 233, 0.3)';
+        ctx.shadowBlur = 4;
         ctx.fill();
         ctx.shadowBlur = 0;
 

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { DiagnosisDto } from './diagnosis.dto';
 import { TreatmentDto } from './treatment.dto';
@@ -8,11 +8,13 @@ export class CreateClinicalCareDto {
   @ApiProperty({ example: 'Control rutinario por sospecha de hipertensión' })
   @IsNotEmpty({ message: 'El motivo de consulta es obligatorio.' })
   @IsString()
+  @MinLength(3, { message: 'El motivo de consulta debe tener al menos 3 caracteres.' })
   reason: string;
 
   @ApiProperty({ example: 'Paciente refiere mareos leves ocasionales en las tardes.' })
   @IsNotEmpty({ message: 'La anamnesis es obligatoria.' })
   @IsString()
+  @MinLength(5, { message: 'La anamnesis debe contener una descripción clínica detallada (al menos 5 caracteres).' })
   anamnesis: string;
 
   @ApiPropertyOptional({ example: 'Paciente lúcido, hidratado. Examen pulmonar normal.' })
@@ -30,15 +32,16 @@ export class CreateClinicalCareDto {
   @IsString()
   indication?: string;
 
-  @ApiProperty({ type: [DiagnosisDto] })
-  @IsArray()
+  @ApiProperty({ type: [DiagnosisDto], description: 'Lista de diagnósticos CIE-10 (mínimo 1)' })
+  @IsArray({ message: 'Los diagnósticos deben ser proporcionados en una lista.' })
+  @ArrayMinSize(1, { message: 'Debe ingresar al menos un diagnóstico clínico oficial CIE-10.' })
   @ValidateNested({ each: true })
   @Type(() => DiagnosisDto)
   diagnoses: DiagnosisDto[];
 
-  @ApiPropertyOptional({ type: [TreatmentDto] })
+  @ApiPropertyOptional({ type: [TreatmentDto], description: 'Lista de medicamentos o indicaciones' })
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: 'Los tratamientos deben ser proporcionados en una lista.' })
   @ValidateNested({ each: true })
   @Type(() => TreatmentDto)
   treatments?: TreatmentDto[];

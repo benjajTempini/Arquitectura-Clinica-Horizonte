@@ -11,21 +11,19 @@ export default function ClinicalEncounter() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Formulario de Atención
-  const [reason, setReason] = useState('Control por sospecha de hipertensión');
-  const [anamnesis, setAnamnesis] = useState('Paciente refiere cefalea matutina y mareos leves ocasionales.');
-  const [physicalExam, setPhysicalExam] = useState('Buen estado general, ruidos cardíacos rítmicos sin soplos.');
-  const [vitalSigns, setVitalSigns] = useState({ pa: '135/85', fc: '74', temp: '36.6', sat: '98', peso: '75', talla: '1.72' });
-  const [indication, setIndication] = useState('Control de presión diario, dieta reducida en sodio.');
+  const [reason, setReason] = useState('');
+  const [anamnesis, setAnamnesis] = useState('');
+  const [physicalExam, setPhysicalExam] = useState('');
+  const [vitalSigns, setVitalSigns] = useState({ pa: '', fc: '', temp: '', sat: '', peso: '', talla: '' });
+  const [indication, setIndication] = useState('');
 
   // Diagnósticos
   const [diagnoses, setDiagnoses] = useState([
-    { code: 'I10', description: 'Hipertensión esencial (primaria)', type: 'PRIMARY' },
+    { code: '', description: '', type: 'PRIMARY' },
   ]);
 
   // Tratamientos
-  const [treatments, setTreatments] = useState([
-    { medication: 'Losartán Potásico', dosage: '50 mg', frequency: 'Cada 24 horas', durationDays: 30, instructions: 'En ayunas' },
-  ]);
+  const [treatments, setTreatments] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadInitial() {
@@ -110,18 +108,41 @@ export default function ClinicalEncounter() {
       return;
     }
 
+    if (!reason.trim() || reason.trim().length < 3) {
+      setMessage({ type: 'error', text: 'El motivo de consulta es obligatorio (al menos 3 caracteres).' });
+      return;
+    }
+    if (!anamnesis.trim() || anamnesis.trim().length < 5) {
+      setMessage({ type: 'error', text: 'La anamnesis clínica es obligatoria (al menos 5 caracteres).' });
+      return;
+    }
+    const validDiagnoses = diagnoses.filter((d) => d.code.trim() && d.description.trim());
+    if (validDiagnoses.length === 0) {
+      setMessage({ type: 'error', text: 'Debe ingresar al menos un diagnóstico con código CIE-10 válido y descripción.' });
+      return;
+    }
+
+    const validTreatments = treatments.filter((t) => t.medication.trim());
+
     try {
       await clinicalCareService.create(selectedAppointmentId, {
-        reason,
-        anamnesis,
-        physicalExam,
+        reason: reason.trim(),
+        anamnesis: anamnesis.trim(),
+        physicalExam: physicalExam?.trim(),
         vitalSigns: JSON.stringify(vitalSigns),
-        indication,
-        diagnoses,
-        treatments,
+        indication: indication?.trim(),
+        diagnoses: validDiagnoses,
+        treatments: validTreatments.length > 0 ? validTreatments : undefined,
       });
 
       setMessage({ type: 'success', text: 'Atención clínica registrada exitosamente con trazabilidad y receta médica.' });
+      setReason('');
+      setAnamnesis('');
+      setPhysicalExam('');
+      setVitalSigns({ pa: '', fc: '', temp: '', sat: '', peso: '', talla: '' });
+      setIndication('');
+      setDiagnoses([{ code: '', description: '', type: 'PRIMARY' }]);
+      setTreatments([]);
       loadPatientData(selectedPatientId);
     } catch (err: any) {
       setMessage({
@@ -135,10 +156,10 @@ export default function ClinicalEncounter() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Atención Médica & Ficha Clínica</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Atención Médica & Ficha Clínica</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Espacio de trabajo para facultativos: anamnesis, examen físico, codificación CIE-10 y prescripciones.
           </p>
         </div>
@@ -148,24 +169,24 @@ export default function ClinicalEncounter() {
         <div
           className={`p-4 rounded-xl text-xs flex items-center justify-between border ${
             message.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-red-500/10 border-red-500/30 text-red-400'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border-red-200 text-red-800'
           }`}
         >
           <span>{message.text}</span>
-          <button onClick={() => setMessage(null)} className="font-bold ml-4">✕</button>
+          <button onClick={() => setMessage(null)} className="font-bold ml-4 hover:opacity-75">✕</button>
         </div>
       )}
 
       {/* Selector de Paciente */}
-      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center gap-4">
-        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
+      <div className="p-4 rounded-2xl bg-white border border-sky-100 flex flex-col sm:flex-row items-center gap-4 shadow-xs">
+        <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider shrink-0 font-mono">
           Paciente en Consulta:
         </label>
         <select
           value={selectedPatientId}
           onChange={(e) => setSelectedPatientId(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-teal-500"
+          className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
         >
           {patients.map((pat) => (
             <option key={pat.id} value={pat.id}>
@@ -177,31 +198,31 @@ export default function ClinicalEncounter() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Historial Clínico Cronológico */}
-        <div className="lg:col-span-1 p-5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="lg:col-span-1 p-5 rounded-2xl bg-white border border-sky-100 shadow-xs">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-white">Historial Clínico</h2>
-            <span className="text-xs text-slate-400 font-mono">{history.length} atenciones</span>
+            <h2 className="text-base font-bold text-slate-900">Historial Clínico</h2>
+            <span className="text-xs text-slate-500 font-mono">{history.length} atenciones</span>
           </div>
 
           {loading ? (
-            <p className="text-xs text-slate-400 py-4">Cargando antecedentes clínicos...</p>
+            <p className="text-xs text-slate-500 py-4">Cargando antecedentes clínicos...</p>
           ) : history.length > 0 ? (
             <div className="space-y-4 max-h-[650px] overflow-y-auto pr-1">
               {history.map((h, i) => (
-                <div key={i} className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-slate-400 border-b border-slate-700 pb-1.5">
-                    <span className="font-mono text-teal-400">{new Date(h.createdAt).toLocaleDateString()}</span>
-                    <span>Dr(a). {h.professional?.lastName || 'Morales'}</span>
+                <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-slate-500 border-b border-slate-200 pb-1.5">
+                    <span className="font-mono text-blue-700 font-semibold">{new Date(h.createdAt).toLocaleDateString()}</span>
+                    <span>Dr(a). {h.professional?.lastName || 'Facultativo Tratante'}</span>
                   </div>
                   <div>
-                    <span className="font-semibold text-white block">Motivo:</span>
-                    <span className="text-slate-300">{h.reason}</span>
+                    <span className="font-semibold text-slate-900 block">Motivo:</span>
+                    <span className="text-slate-600">{h.reason}</span>
                   </div>
                   <div>
-                    <span className="font-semibold text-white block">Diagnósticos:</span>
+                    <span className="font-semibold text-slate-900 block">Diagnósticos:</span>
                     <div className="space-y-1 mt-1">
                       {h.diagnoses?.map((d: any, di: number) => (
-                        <div key={di} className="inline-block mr-1.5 px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20 text-[11px] font-mono">
+                        <div key={di} className="inline-block mr-1.5 px-2 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 text-[11px] font-mono font-medium">
                           [{d.code}] {d.description}
                         </div>
                       ))}
@@ -209,8 +230,8 @@ export default function ClinicalEncounter() {
                   </div>
                   {h.treatments?.length > 0 && (
                     <div>
-                      <span className="font-semibold text-white block">Tratamientos:</span>
-                      <ul className="list-disc list-inside text-slate-300 text-[11px]">
+                      <span className="font-semibold text-slate-900 block">Tratamientos:</span>
+                      <ul className="list-disc list-inside text-slate-600 text-[11px]">
                         {h.treatments.map((t: any, ti: number) => (
                           <li key={ti}>{t.medication} - {t.dosage} ({t.frequency})</li>
                         ))}
@@ -221,120 +242,120 @@ export default function ClinicalEncounter() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 py-8 text-center">
+            <p className="text-xs text-slate-500 py-8 text-center">
               No se registran atenciones clínicas previas para este paciente.
             </p>
           )}
         </div>
 
         {/* Formulario Registro de Atención Nueva */}
-        <div className="lg:col-span-2 p-6 rounded-xl bg-slate-900 border border-slate-800">
-          <h2 className="text-base font-bold text-white mb-4">Registro de Atención Actual</h2>
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-white border border-sky-100 shadow-xs">
+          <h2 className="text-base font-bold text-slate-900 mb-4">Registro de Atención Actual</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Signos Vitales */}
-            <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700">
-              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-3">
+            <div className="p-4 rounded-xl bg-sky-50/50 border border-sky-100">
+              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider block mb-3 font-mono">
                 Signos Vitales & Medidas
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-0.5">P.A. (mmHg)</label>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-0.5">P.A. (mmHg)</label>
                   <input
                     type="text"
                     value={vitalSigns.pa}
                     onChange={(e) => setVitalSigns({ ...vitalSigns, pa: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-0.5">F.C. (lpm)</label>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-0.5">F.C. (lpm)</label>
                   <input
                     type="text"
                     value={vitalSigns.fc}
                     onChange={(e) => setVitalSigns({ ...vitalSigns, fc: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-0.5">Temp (°C)</label>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-0.5">Temp (°C)</label>
                   <input
                     type="text"
                     value={vitalSigns.temp}
                     onChange={(e) => setVitalSigns({ ...vitalSigns, temp: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-0.5">SatO2 (%)</label>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-0.5">SatO2 (%)</label>
                   <input
                     type="text"
                     value={vitalSigns.sat}
                     onChange={(e) => setVitalSigns({ ...vitalSigns, sat: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-0.5">Peso (kg)</label>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-0.5">Peso (kg)</label>
                   <input
                     type="text"
                     value={vitalSigns.peso}
                     onChange={(e) => setVitalSigns({ ...vitalSigns, peso: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-0.5">Talla (m)</label>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-0.5">Talla (m)</label>
                   <input
                     type="text"
                     value={vitalSigns.talla}
                     onChange={(e) => setVitalSigns({ ...vitalSigns, talla: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono focus:border-blue-500"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Motivo de Consulta</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Motivo de Consulta</label>
               <input
                 type="text"
                 required
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Anamnesis / Evolución</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Anamnesis / Evolución</label>
               <textarea
                 required
                 rows={3}
                 value={anamnesis}
                 onChange={(e) => setAnamnesis(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Examen Físico</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Examen Físico</label>
               <textarea
                 rows={2}
                 value={physicalExam}
                 onChange={(e) => setPhysicalExam(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
 
             {/* Sección Diagnósticos */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">Diagnósticos (CIE-10)</label>
+                <label className="text-xs font-semibold text-slate-700">Diagnósticos (CIE-10)</label>
                 <button
                   type="button"
                   onClick={addDiagnosis}
-                  className="text-xs text-teal-400 hover:text-teal-300 font-semibold"
+                  className="text-xs text-blue-600 hover:text-blue-700 font-semibold"
                 >
                   + Agregar Diagnóstico
                 </button>
@@ -352,7 +373,7 @@ export default function ClinicalEncounter() {
                       next[idx].code = e.target.value;
                       setDiagnoses(next);
                     }}
-                    className="w-24 px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                    className="w-28 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono focus:bg-white focus:border-blue-500 transition"
                   />
                   <input
                     type="text"
@@ -364,13 +385,13 @@ export default function ClinicalEncounter() {
                       next[idx].description = e.target.value;
                       setDiagnoses(next);
                     }}
-                    className="flex-1 px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 text-white text-xs"
+                    className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 transition"
                   />
                   {diagnoses.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeDiagnosis(idx)}
-                      className="p-1.5 text-slate-400 hover:text-red-400"
+                      className="p-1.5 text-slate-400 hover:text-red-600"
                     >
                       ✕
                     </button>
@@ -382,18 +403,18 @@ export default function ClinicalEncounter() {
             {/* Sección Tratamientos / Receta */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">Prescripción y Tratamiento</label>
+                <label className="text-xs font-semibold text-slate-700">Prescripción y Tratamiento</label>
                 <button
                   type="button"
                   onClick={addTreatment}
-                  className="text-xs text-teal-400 hover:text-teal-300 font-semibold"
+                  className="text-xs text-blue-600 hover:text-blue-700 font-semibold"
                 >
                   + Agregar Fármaco
                 </button>
               </div>
 
               {treatments.map((t, idx) => (
-                <div key={idx} className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-center bg-slate-800/30 p-2 rounded-lg border border-slate-700/60">
+                <div key={idx} className="grid grid-cols-1 sm:grid-cols-4 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                   <input
                     type="text"
                     placeholder="Fármaco"
@@ -403,7 +424,7 @@ export default function ClinicalEncounter() {
                       next[idx].medication = e.target.value;
                       setTreatments(next);
                     }}
-                    className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white text-xs"
+                    className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs"
                   />
                   <input
                     type="text"
@@ -414,7 +435,7 @@ export default function ClinicalEncounter() {
                       next[idx].dosage = e.target.value;
                       setTreatments(next);
                     }}
-                    className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white text-xs"
+                    className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs"
                   />
                   <input
                     type="text"
@@ -425,7 +446,7 @@ export default function ClinicalEncounter() {
                       next[idx].frequency = e.target.value;
                       setTreatments(next);
                     }}
-                    className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white text-xs"
+                    className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs"
                   />
                   <div className="flex items-center gap-1">
                     <input
@@ -437,12 +458,12 @@ export default function ClinicalEncounter() {
                         next[idx].durationDays = Number(e.target.value);
                         setTreatments(next);
                       }}
-                      className="w-16 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white text-xs font-mono"
+                      className="w-16 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono"
                     />
                     <button
                       type="button"
                       onClick={() => removeTreatment(idx)}
-                      className="p-1 text-slate-400 hover:text-red-400 text-xs"
+                      className="p-1 text-slate-400 hover:text-red-600 text-xs"
                     >
                       ✕
                     </button>
@@ -452,20 +473,20 @@ export default function ClinicalEncounter() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Indicaciones Médicas y Seguimiento</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Indicaciones Médicas y Seguimiento</label>
               <textarea
                 rows={2}
                 value={indication}
                 onChange={(e) => setIndication(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
               />
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex justify-end">
+            <div className="pt-4 border-t border-slate-100 flex justify-end">
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 disabled:opacity-60 text-white font-semibold text-sm transition shadow-lg shadow-teal-900/30 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold text-sm transition shadow-md shadow-blue-600/20 flex items-center gap-2"
               >
                 {loading ? (
                   <>

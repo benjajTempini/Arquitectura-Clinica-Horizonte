@@ -6,18 +6,18 @@ import PatientBookingWidget from '../components/PatientBookingWidget';
 <Layout title="Reservar Hora Médica Online — Clínica Horizonte">
   <div class="max-w-[1650px] mx-auto space-y-8 py-4 animate-fadeIn">
     {/* Encabezado y Navegación Rápida */}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
       <div class="space-y-1">
-        <a href="/" class="inline-flex items-center gap-1.5 text-xs text-teal-400 hover:text-teal-300 font-medium transition mb-2">
+        <a href="/" class="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium transition mb-2">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
           <span>Volver al Inicio</span>
         </a>
-        <h1 class="text-3xl font-extrabold text-white tracking-tight">
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
           Reserva de Horas Médicas Online
         </h1>
-        <p class="text-xs sm:text-sm text-slate-400">
+        <p class="text-xs sm:text-sm text-slate-500">
           Agendamiento ambulatorio sin solapamientos. Selecciona tu especialidad, facultativo y horario preferido.
         </p>
       </div>
@@ -25,9 +25,9 @@ import PatientBookingWidget from '../components/PatientBookingWidget';
       <div class="flex items-center gap-2">
         <a
           href="/consultar-cita"
-          class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition flex items-center gap-1.5"
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-sky-50 text-slate-700 text-xs font-medium border border-slate-200 hover:border-sky-200 transition flex items-center gap-1.5 shadow-xs"
         >
-          <svg class="w-3.5 h-3.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <span>¿Ya tienes cita? Consúltala aquí</span>
@@ -39,19 +39,19 @@ import PatientBookingWidget from '../components/PatientBookingWidget';
     <PatientBookingWidget client:load />
 
     {/* Tarjeta Informativa de Asistencia al Paciente */}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-400 pt-2">
-      <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1">
-        <strong class="text-white block font-semibold">1. Sin Solapamientos de Agenda</strong>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600 pt-2">
+      <div class="p-4 rounded-2xl bg-white border border-sky-100 space-y-1 shadow-xs">
+        <strong class="text-slate-900 block font-semibold">1. Sin Solapamientos de Agenda</strong>
         <p>Nuestro motor valida transaccionalmente la disponibilidad del box y del profesional, garantizando atención puntual.</p>
       </div>
 
-      <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1">
-        <strong class="text-white block font-semibold">2. Bono I-Med en Mesón</strong>
+      <div class="p-4 rounded-2xl bg-white border border-sky-100 space-y-1 shadow-xs">
+        <strong class="text-slate-900 block font-semibold">2. Bono I-Med en Mesón</strong>
         <p>No necesitas traer bono comprado. En recepción emitimos tu bono Fonasa o Isapre directamente con tu huella dactilar.</p>
       </div>
 
-      <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1">
-        <strong class="text-white block font-semibold">3. Atención Presencial</strong>
+      <div class="p-4 rounded-2xl bg-white border border-sky-100 space-y-1 shadow-xs">
+        <strong class="text-slate-900 block font-semibold">3. Atención Presencial</strong>
         <p>Edificio ambulatorio en Av. Providencia 1420 (Metro Manuel Montt). Presentarse 15 min antes con cédula de identidad.</p>
       </div>
     </div>

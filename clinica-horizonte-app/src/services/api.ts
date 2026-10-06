@@ -100,10 +100,15 @@ export async function apiRequest<T = any>(endpoint: string, options: RequestInit
         window.location.href = `/login?expired=true&redirect=${encodeURIComponent(window.location.pathname)}`;
       }
 
+      const validationMsg =
+        Array.isArray(data.details) && data.details.length > 0
+          ? data.details.join('. ')
+          : data.message || `Error ${response.status}: Solicitud fallida.`;
+
       throw {
         statusCode: response.status,
         code: data.code || 'REQUEST_FAILED',
-        message: data.message || `Error ${response.status}: Solicitud fallida.`,
+        message: validationMsg,
         details: data.details || [],
       };
     }
@@ -123,186 +128,8 @@ export async function apiRequest<T = any>(endpoint: string, options: RequestInit
 }
 
 // -----------------------------------------------------------------------------
-// Catálogo de Contingencia y Servicios de Dominio
+// Servicios de Dominio
 // -----------------------------------------------------------------------------
-
-export const FALLBACK_SPECIALTIES = [
-  {
-    id: '11111111-1111-1111-1111-111111111101',
-    code: 'MED-GEN',
-    name: 'Medicina General',
-    description: 'Atención médica primaria integral para adultos y controles de salud.',
-    defaultDurationMin: 20,
-    price: 14200,
-  },
-  {
-    id: '11111111-1111-1111-1111-111111111102',
-    code: 'PED-01',
-    name: 'Pediatría Integral',
-    description: 'Atención integral para niños y adolescentes con control de niño sano.',
-    defaultDurationMin: 30,
-    price: 18500,
-  },
-  {
-    id: '11111111-1111-1111-1111-111111111103',
-    code: 'CAR-01',
-    name: 'Cardiología Preventiva',
-    description: 'Evaluación y seguimiento cardiovascular integral y prevención de infartos.',
-    defaultDurationMin: 30,
-    price: 28000,
-  },
-  {
-    id: '11111111-1111-1111-1111-111111111104',
-    code: 'TRA-01',
-    name: 'Traumatología Adulto & Infantil',
-    description: 'Atención del aparato locomotor, lesiones deportivas y articulares.',
-    defaultDurationMin: 20,
-    price: 22000,
-  },
-];
-
-export const FALLBACK_PROFESSIONALS = [
-  {
-    id: '22222222-2222-2222-2222-222222222201',
-    firstName: 'Roberto',
-    lastName: 'Morales Soto',
-    licenseNumber: 'MED-18942-CH',
-    boxNumber: 'Box 01',
-    email: 'dr.morales@clinicahorizonte.cl',
-    specialties: [
-      {
-        specialty: {
-          id: '11111111-1111-1111-1111-111111111101',
-          name: 'Medicina General',
-          code: 'MED-GEN',
-        },
-      },
-      {
-        specialty: {
-          id: '11111111-1111-1111-1111-111111111103',
-          name: 'Cardiología Preventiva',
-          code: 'CAR-01',
-        },
-      },
-    ],
-    schedules: [
-      { dayOfWeek: 1, startTime: '08:30', endTime: '18:00' },
-      { dayOfWeek: 2, startTime: '08:30', endTime: '18:00' },
-      { dayOfWeek: 3, startTime: '08:30', endTime: '18:00' },
-      { dayOfWeek: 4, startTime: '08:30', endTime: '18:00' },
-      { dayOfWeek: 5, startTime: '08:30', endTime: '17:00' },
-    ],
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222202',
-    firstName: 'Carolina',
-    lastName: 'Valenzuela Ríos',
-    licenseNumber: 'MED-24819-CH',
-    boxNumber: 'Box 03',
-    email: 'dra.valenzuela@clinicahorizonte.cl',
-    specialties: [
-      {
-        specialty: {
-          id: '11111111-1111-1111-1111-111111111102',
-          name: 'Pediatría Integral',
-          code: 'PED-01',
-        },
-      },
-    ],
-    schedules: [
-      { dayOfWeek: 1, startTime: '09:00', endTime: '17:30' },
-      { dayOfWeek: 2, startTime: '09:00', endTime: '17:30' },
-      { dayOfWeek: 3, startTime: '09:00', endTime: '17:30' },
-      { dayOfWeek: 4, startTime: '09:00', endTime: '17:30' },
-      { dayOfWeek: 5, startTime: '09:00', endTime: '16:00' },
-    ],
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222203',
-    firstName: 'Matías',
-    lastName: 'Albornoz Castro',
-    licenseNumber: 'MED-31055-CH',
-    boxNumber: 'Box 04',
-    email: 'dr.albornoz@clinicahorizonte.cl',
-    specialties: [
-      {
-        specialty: {
-          id: '11111111-1111-1111-1111-111111111104',
-          name: 'Traumatología Adulto & Infantil',
-          code: 'TRA-01',
-        },
-      },
-    ],
-    schedules: [
-      { dayOfWeek: 1, startTime: '08:00', endTime: '16:30' },
-      { dayOfWeek: 2, startTime: '08:00', endTime: '16:30' },
-      { dayOfWeek: 3, startTime: '08:00', endTime: '16:30' },
-      { dayOfWeek: 4, startTime: '08:00', endTime: '16:30' },
-      { dayOfWeek: 5, startTime: '08:00', endTime: '15:00' },
-    ],
-  },
-];
-
-export const FALLBACK_PATIENTS = [
-  {
-    id: '33333333-3333-3333-3333-333333333301',
-    nationalId: '15.824.912-K',
-    firstName: 'Sofía',
-    lastName: 'Contreras Díaz',
-    birthDate: '1992-05-14T00:00:00.000Z',
-    gender: 'FEMENINO',
-    phone: '+56 9 8123 4567',
-    email: 'paciente.demo@clinicahorizonte.cl',
-    address: 'Av. Providencia 2040, Depto 502, Providencia',
-    emergencyContact: 'Carlos Contreras (+56 9 8765 4321)',
-  },
-  {
-    id: '33333333-3333-3333-3333-333333333302',
-    nationalId: '12.345.678-5',
-    firstName: 'Juan Pablo',
-    lastName: 'González Muñoz',
-    birthDate: '1985-11-20T00:00:00.000Z',
-    gender: 'MASCULINO',
-    phone: '+56 9 7654 3210',
-    email: 'juan.gonzalez@gmail.com',
-    address: 'Los Leones 123, Providencia',
-    emergencyContact: 'María Muñoz (+56 9 1234 5678)',
-  },
-  {
-    id: '33333333-3333-3333-3333-333333333303',
-    nationalId: '18.765.432-1',
-    firstName: 'Valentina',
-    lastName: 'Rojas Silva',
-    birthDate: '1998-03-08T00:00:00.000Z',
-    gender: 'FEMENINO',
-    phone: '+56 9 6543 2109',
-    email: 'valentina.rojas@gmail.com',
-    address: 'Manuel Montt 456, Providencia',
-    emergencyContact: 'Pedro Rojas (+56 9 9876 5432)',
-  },
-];
-
-function generateFallbackAvailability(professionalId: string, date: string) {
-  const prof = FALLBACK_PROFESSIONALS.find((p) => p.id === professionalId) || FALLBACK_PROFESSIONALS[0];
-  const slots = [
-    { startTime: `${date}T09:00:00.000Z`, endTime: `${date}T09:20:00.000Z`, isAvailable: true },
-    { startTime: `${date}T09:20:00.000Z`, endTime: `${date}T09:40:00.000Z`, isAvailable: true },
-    { startTime: `${date}T10:00:00.000Z`, endTime: `${date}T10:20:00.000Z`, isAvailable: false, reason: 'OCCUPIED' },
-    { startTime: `${date}T10:20:00.000Z`, endTime: `${date}T10:40:00.000Z`, isAvailable: true },
-    { startTime: `${date}T11:00:00.000Z`, endTime: `${date}T11:20:00.000Z`, isAvailable: true },
-    { startTime: `${date}T11:20:00.000Z`, endTime: `${date}T11:40:00.000Z`, isAvailable: true },
-    { startTime: `${date}T14:00:00.000Z`, endTime: `${date}T14:20:00.000Z`, isAvailable: true },
-    { startTime: `${date}T14:20:00.000Z`, endTime: `${date}T14:40:00.000Z`, isAvailable: true },
-    { startTime: `${date}T15:00:00.000Z`, endTime: `${date}T15:20:00.000Z`, isAvailable: true },
-  ];
-  return {
-    professionalId: prof.id,
-    professionalName: `${prof.firstName} ${prof.lastName}`,
-    boxNumber: prof.boxNumber,
-    date,
-    slots,
-  };
-}
 
 export const authService = {
   login: (credentials: { email: string; password: string }) =>
@@ -318,17 +145,9 @@ export const patientsService = {
     try {
       const res = await apiRequest(`/patients${search ? `?search=${encodeURIComponent(search)}` : ''}`);
       if (res && Array.isArray(res.items)) return res;
-      return { total: FALLBACK_PATIENTS.length, limit: 50, offset: 0, items: FALLBACK_PATIENTS };
+      return { total: 0, limit: 50, offset: 0, items: [] };
     } catch {
-      const filtered = search
-        ? FALLBACK_PATIENTS.filter(
-            (p) =>
-              p.nationalId.toLowerCase().includes(search.toLowerCase()) ||
-              p.firstName.toLowerCase().includes(search.toLowerCase()) ||
-              p.lastName.toLowerCase().includes(search.toLowerCase())
-          )
-        : FALLBACK_PATIENTS;
-      return { total: filtered.length, limit: 50, offset: 0, items: filtered };
+      return { total: 0, limit: 50, offset: 0, items: [] };
     }
   },
   getById: (id: string) => apiRequest(`/patients/${id}`),
@@ -342,19 +161,19 @@ export const professionalsService = {
   list: async () => {
     try {
       const res = await apiRequest('/professionals');
-      if (Array.isArray(res) && res.length > 0) return res;
-      return FALLBACK_PROFESSIONALS;
+      if (Array.isArray(res)) return res;
+      return [];
     } catch {
-      return FALLBACK_PROFESSIONALS;
+      return [];
     }
   },
   getAvailability: async (id: string, date: string) => {
     try {
       const res = await apiRequest(`/professionals/${id}/availability?date=${date}`);
       if (res && res.slots) return res;
-      return generateFallbackAvailability(id, date);
+      return { professionalId: id, date, slots: [] };
     } catch {
-      return generateFallbackAvailability(id, date);
+      return { professionalId: id, date, slots: [] };
     }
   },
 };
@@ -363,10 +182,10 @@ export const specialtiesService = {
   list: async () => {
     try {
       const res = await apiRequest('/specialties');
-      if (Array.isArray(res) && res.length > 0) return res;
-      return FALLBACK_SPECIALTIES;
+      if (Array.isArray(res)) return res;
+      return [];
     } catch {
-      return FALLBACK_SPECIALTIES;
+      return [];
     }
   },
 };
