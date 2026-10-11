@@ -7,7 +7,7 @@
   <div
     id="clinical-progress-bar"
     class="fixed top-0 left-0 w-0 h-[3px] z-[99999] pointer-events-none transition-all duration-300 ease-out opacity-0"
-    style="background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #2563eb 100%); box-shadow: 0 0 14px rgba(56, 189, 248, 0.8), 0 0 6px rgba(37, 99, 235, 0.6);"
+    style="background: linear-gradient(90deg, #458b74 0%, #76eec6 50%, #397662 100%); box-shadow: 0 0 14px rgba(118, 238, 198, 0.8), 0 0 6px rgba(69, 139, 116, 0.6);"
   >
     <div
       class="absolute right-0 top-0 bottom-0 w-8 bg-white/40 blur-[2px] rounded-r-full"
@@ -19,31 +19,31 @@
     id="clinical-floating-toast"
     class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[99998] pointer-events-none transition-all duration-400 ease-out transform translate-y-8 opacity-0 scale-95 max-w-sm"
   >
-    <div class="p-3.5 rounded-2xl bg-white/95 border border-sky-200 shadow-xl shadow-sky-950/10 backdrop-blur-xl flex items-center gap-3.5">
+    <div class="p-3.5 rounded-2xl bg-white/95 dark:bg-[#0c221e]/95 border border-sky-200 dark:border-teal-700/60 shadow-xl shadow-teal-950/20 backdrop-blur-xl flex items-center gap-3.5">
       <!-- Icono Médico con Pulsación Activa -->
-      <div class="relative w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center shrink-0">
-        <svg class="w-5 h-5 animate-pulse text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="relative w-9 h-9 rounded-xl bg-sky-50 dark:bg-teal-950/80 border border-sky-200 dark:border-teal-700 text-sky-600 dark:text-teal-300 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 animate-pulse text-sky-600 dark:text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
-        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
-        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-teal-400 animate-ping"></span>
+        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-teal-400"></span>
       </div>
 
       <!-- Textos Empáticos Institucionales -->
       <div class="min-w-0 pr-1">
-        <p class="text-xs font-semibold text-slate-800 tracking-tight leading-snug">
+        <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 tracking-tight leading-snug">
           Estamos trabajando para su comodidad y salud
         </p>
         <p
           id="clinical-toast-message"
-          class="text-[11px] text-sky-600 font-mono truncate mt-0.5"
+          class="text-[11px] text-sky-600 dark:text-teal-300 font-mono truncate mt-0.5"
         >
           Sincronizando información clínica en tiempo real...
         </p>
       </div>
 
       <!-- Spinner Circular Clínico -->
-      <div class="w-4 h-4 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin shrink-0 ml-1"></div>
+      <div class="w-4 h-4 rounded-full border-2 border-sky-200 dark:border-teal-800 border-t-sky-600 dark:border-t-teal-400 animate-spin shrink-0 ml-1"></div>
     </div>
   </div>
 </div>

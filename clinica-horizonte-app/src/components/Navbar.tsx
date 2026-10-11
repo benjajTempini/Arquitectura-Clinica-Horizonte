@@ -11,6 +11,7 @@ interface StoredUser {
 export default function Navbar() {
   const [user, setUser] = useState<StoredUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -21,7 +22,31 @@ export default function Navbar() {
         setUser(null);
       }
     }
+
+    if (typeof document !== 'undefined') {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    }
+
+    const handleThemeChange = (e: any) => {
+      setIsDark(e.detail?.theme === 'dark');
+    };
+    window.addEventListener('clinical:theme-change', handleThemeChange);
+    return () => window.removeEventListener('clinical:theme-change', handleThemeChange);
   }, []);
+
+  const toggleTheme = () => {
+    const nextIsDark = !isDark;
+    setIsDark(nextIsDark);
+    if (nextIsDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      window.dispatchEvent(new CustomEvent('clinical:theme-change', { detail: { theme: 'dark' } }));
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      window.dispatchEvent(new CustomEvent('clinical:theme-change', { detail: { theme: 'light' } }));
+    }
+  };
 
   const handleLogout = () => {
     if (typeof window !== 'undefined' && (window as any).ClinicalLoader) {
@@ -62,7 +87,7 @@ export default function Navbar() {
   const badge = getRoleBadge();
 
   return (
-    <nav className="bg-white/95 border-b border-sky-100 text-slate-800 sticky top-0 z-50 shadow-xs backdrop-blur-md">
+    <nav className="bg-white/95 dark:bg-[#071916]/95 border-b border-sky-100 dark:border-teal-900/60 text-slate-800 dark:text-slate-100 sticky top-0 z-50 shadow-xs backdrop-blur-md">
       <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="flex items-center justify-between h-16">
           
@@ -242,11 +267,30 @@ export default function Navbar() {
               </a>
             )}
 
+            {/* Botón de Alternancia de Tema (Modo Claro / Modo Oscuro Teal) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              title={isDark ? 'Activar modo claro' : 'Activar modo oscuro (Teal nocturno)'}
+              className="p-2 rounded-xl border border-slate-200 dark:border-teal-800/80 bg-slate-50 dark:bg-[#0c221e] text-slate-600 dark:text-teal-300 hover:text-teal-700 dark:hover:text-teal-200 hover:border-teal-300 dark:hover:border-teal-500 transition shadow-xs flex items-center justify-center"
+            >
+              {isDark ? (
+                <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+
             {/* Botón de Menú Móvil */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900"
+              className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-[#0c221e] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-transparent dark:border-teal-800/60"
               aria-label="Abrir menú"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,7 +306,7 @@ export default function Navbar() {
 
         {/* MENÚ MÓVIL DESPLEGABLE */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-sky-100 space-y-2 bg-white/95">
+          <div className="lg:hidden py-4 border-t border-sky-100 dark:border-teal-900/60 space-y-2 bg-white/95 dark:bg-[#071916]/95">
             {!user ? (
               <div className="space-y-1 px-2">
                 <a href="/" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-sky-50">
@@ -347,6 +391,31 @@ export default function Navbar() {
                 </div>
               </div>
             )}
+
+            {/* Alternar Tema en Menú Móvil */}
+            <div className="pt-2 px-2 border-t border-slate-200 dark:border-teal-900/60">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-teal-200 bg-slate-50 dark:bg-[#0c221e] border border-slate-200 dark:border-teal-800/80 hover:bg-slate-100 dark:hover:bg-[#122e29] transition"
+              >
+                <span className="flex items-center gap-2">
+                  {isDark ? (
+                    <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                  <span>{isDark ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro (Teal)'}</span>
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-teal-500/40 text-teal-600 dark:text-teal-400">
+                  {isDark ? 'Oscuro' : 'Claro'}
+                </span>
+              </button>
+            </div>
           </div>
         )}
       </div>

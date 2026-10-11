@@ -32,14 +32,26 @@
       mouse.y = null;
     });
 
-    // Partículas y colores de alta tecnología clínica (tonos celestes y azul)
+    // Paletas adaptativas según tema claro y modo oscuro teal
+    function getPalette() {
+      const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+      if (isDark) {
+        return [
+          'rgba(118, 238, 198, ', // Aquamarine acento brillante (#76eec6)
+          'rgba(45, 212, 191, ',  // Teal-400 vibrante (#2dd4bf)
+          'rgba(20, 184, 166, ',  // Teal-500 (#14b8a6)
+          'rgba(94, 234, 212, ',  // Teal-300 luminoso (#5eead4)
+        ];
+      }
+      return [
+        'rgba(118, 238, 198, ',  // Aquamarine luminoso (#76eec6)
+        'rgba(69, 139, 116, ',   // Aquamarine clínico profundo (#458b74)
+        'rgba(92, 219, 177, ',   // Aquamarine intermedio (#5cdbb1)
+        'rgba(194, 245, 229, ',  // Aquamarine suave pastel (#c2f5e5)
+      ];
+    }
+
     const particles = [];
-    const colors = [
-      'rgba(14, 165, 233, ',  // Sky-500 (Celeste)
-      'rgba(2, 132, 199, ',   // Sky-600 (Azul clínico)
-      'rgba(59, 130, 246, ',  // Blue-500 (Azul suave)
-      'rgba(56, 189, 248, ',  // Sky-400 (Celeste luminoso)
-    ];
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -55,10 +67,11 @@
       particles.length = 0;
       const count = Math.floor((width * height) / (width < 768 ? 22000 : 16000));
       const clampedCount = Math.max(25, Math.min(count, 65));
+      const activeColors = getPalette();
 
       for (let i = 0; i < clampedCount; i++) {
         const speed = prefersReducedMotion ? 0.08 : 0.35;
-        const colorBase = colors[Math.floor(Math.random() * colors.length)];
+        const colorBase = activeColors[Math.floor(Math.random() * activeColors.length)];
         particles.push({
           x: Math.random() * width,
           y: Math.random() * height,
@@ -72,12 +85,19 @@
       }
     }
 
+    // Escuchar cambios de tema en vivo
+    window.addEventListener('clinical:theme-change', () => {
+      initParticles();
+    });
+
     function draw() {
       ctx.clearRect(0, 0, width, height);
 
       const maxConnectDist = width < 768 ? 95 : 130;
       const maxConnectDistSq = maxConnectDist * maxConnectDist;
       const mouseMaxDistSq = mouse.maxDist * mouse.maxDist;
+
+      const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
       // 1. Conexiones sinápticas entre nodos cercanos
       for (let i = 0; i < particles.length; i++) {
@@ -91,9 +111,9 @@
 
           if (distSq < maxConnectDistSq) {
             const dist = Math.sqrt(distSq);
-            const alpha = (1 - dist / maxConnectDist) * 0.16;
+            const alpha = (1 - dist / maxConnectDist) * (isDark ? 0.22 : 0.16);
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(14, 165, 233, ${alpha})`;
+            ctx.strokeStyle = isDark ? `rgba(45, 212, 191, ${alpha})` : `rgba(118, 238, 198, ${alpha})`;
             ctx.lineWidth = 0.8;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
@@ -109,9 +129,9 @@
 
           if (mDistSq < mouseMaxDistSq) {
             const mDist = Math.sqrt(mDistSq);
-            const mAlpha = (1 - mDist / mouse.maxDist) * 0.32;
+            const mAlpha = (1 - mDist / mouse.maxDist) * (isDark ? 0.45 : 0.32);
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(2, 132, 199, ${mAlpha})`;
+            ctx.strokeStyle = isDark ? `rgba(118, 238, 198, ${mAlpha})` : `rgba(69, 139, 116, ${mAlpha})`;
             ctx.lineWidth = 1;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(mouse.x, mouse.y);
@@ -137,8 +157,8 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `${p.colorBase}${currentAlpha})`;
-        ctx.shadowColor = 'rgba(14, 165, 233, 0.3)';
-        ctx.shadowBlur = 4;
+        ctx.shadowColor = isDark ? 'rgba(45, 212, 191, 0.6)' : 'rgba(118, 238, 198, 0.4)';
+        ctx.shadowBlur = isDark ? 6 : 4;
         ctx.fill();
         ctx.shadowBlur = 0;
 

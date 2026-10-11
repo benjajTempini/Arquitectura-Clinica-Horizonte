@@ -1,14 +1,163 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-horizonte-50: #f0f9ff;
-  --color-horizonte-100: #e0f2fe;
-  --color-horizonte-200: #bae6fd;
-  --color-horizonte-300: #7dd3fc;
-  --color-horizonte-400: #38bdf8;
-  --color-horizonte-500: #0284c7;
-  --color-horizonte-600: #0369a1;
-  --color-horizonte-700: #075985;
-  --color-horizonte-800: #0c4a6e;
-  --color-horizonte-900: #082f49;
+  /* Identidad Institucional Clínica Horizonte — Blanco con Aquamarine (#76eec6 y #458b74) */
+  --color-horizonte-50: #f0fdf9;
+  --color-horizonte-100: #e6faf4;
+  --color-horizonte-200: #c2f5e5;
+  --color-horizonte-300: #76eec6;
+  --color-horizonte-400: #5cdbb1;
+  --color-horizonte-500: #458b74;
+  --color-horizonte-600: #397662;
+  --color-horizonte-700: #2e604f;
+  --color-horizonte-800: #254d40;
+  --color-horizonte-900: #1b372e;
+  --color-horizonte-950: #0f221c;
+
+  /* Redefinición armónica de tokens 'sky' y 'blue' hacia la nueva gama Aquamarine */
+  --color-sky-50: #f0fdf9;
+  --color-sky-100: #e6faf4;
+  --color-sky-200: #c2f5e5;
+  --color-sky-300: #76eec6;
+  --color-sky-400: #5cdbb1;
+  --color-sky-500: #458b74;
+  --color-sky-600: #397662;
+  --color-sky-700: #2e604f;
+  --color-sky-800: #254d40;
+  --color-sky-900: #1b372e;
+  --color-sky-950: #0f221c;
+
+  --color-blue-50: #f0fdf9;
+  --color-blue-100: #e6faf4;
+  --color-blue-200: #c2f5e5;
+  --color-blue-300: #76eec6;
+  --color-blue-400: #5cdbb1;
+  --color-blue-500: #458b74;
+  --color-blue-600: #458b74;
+  --color-blue-700: #397662;
+  --color-blue-800: #2e604f;
+  --color-blue-900: #1b372e;
+  --color-blue-950: #0f221c;
+
+  --color-cyan-500: #458b74;
+  --color-cyan-400: #76eec6;
+
+  --color-aquamarine-light: #76eec6;
+  --color-aquamarine-dark: #458b74;
+}
+
+/* ==========================================================================
+   ESTILOS INSTITUCIONALES PARA MODO OSCURO (TEAL & AQUAMARINE NOCTURNO)
+   ========================================================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark html,
+.dark body {
+  background-color: #071311;
+  color: #f1f5f9;
+}
+
+/* Adaptación elegante de superficies y tarjetas blancas en modo oscuro */
+.dark .bg-white {
+  background-color: #0c1f1c;
+  border-color: rgba(45, 212, 191, 0.18);
+}
+
+.dark .bg-slate-50 {
+  background-color: #071311;
+}
+
+/* Textos adaptados para legibilidad y contraste en modo oscuro */
+.dark .text-slate-900 {
+  color: #f8fafc;
+}
+
+.dark .text-slate-800 {
+  color: #e2e8f0;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8;
+}
+
+.dark .text-slate-500 {
+  color: #64748b;
+}
+
+/* Bordes y separadores sutiles en gama teal oscuro */
+.dark .border-slate-200 {
+  border-color: rgba(45, 212, 191, 0.18);
+}
+
+.dark .border-slate-100 {
+  border-color: rgba(45, 212, 191, 0.1);
+}
+
+.dark .border-sky-100 {
+  border-color: rgba(45, 212, 191, 0.16);
+}
+
+.dark .border-sky-200 {
+  border-color: rgba(45, 212, 191, 0.28);
+}
+
+/* Fondos tenues para píldoras, tags y tarjetas secundarias en modo oscuro */
+.dark .bg-sky-50 {
+  background-color: rgba(13, 148, 136, 0.16);
+}
+
+.dark .bg-blue-50 {
+  background-color: rgba(13, 148, 136, 0.14);
+}
+
+.dark .bg-sky-100 {
+  background-color: rgba(20, 184, 166, 0.22);
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(20, 184, 166, 0.25);
+}
+
+/* Formularios clínicos: Inputs, selects y textareas legibles */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: #081a17 !important;
+  color: #f8fafc !important;
+  border-color: rgba(45, 212, 191, 0.3) !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #76eec6 !important;
+  box-shadow: 0 0 0 2px rgba(118, 238, 198, 0.25) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Tablas y filas en modo oscuro */
+.dark table tbody tr:hover {
+  background-color: rgba(20, 184, 166, 0.08) !important;
+}
+
+/* Modales y sombras con resplandor sutil teal */
+.dark .shadow-xs,
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.65), 0 0 12px -2px rgba(20, 184, 166, 0.06);
 }

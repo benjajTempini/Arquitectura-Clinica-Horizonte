@@ -16,13 +16,28 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
 ---
 
 <!doctype html>
-<html lang="es" class="h-full bg-slate-50 text-slate-800">
+<html lang="es" class="h-full bg-slate-50 text-slate-800 dark:bg-[#071311] dark:text-slate-100 transition-colors duration-200">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="Sistema de Gestión Clínica y Administrativa — Clínica Horizonte" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title} — Clínica Horizonte</title>
+
+    <script is:inline>
+      // Inicialización instantánea del tema sin destello visual (FOUC)
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <script is:inline define:vars={{ publicApiUrl }}>
       window.__PUBLIC_API_URL__ = publicApiUrl;
@@ -80,7 +95,7 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
       })();
     </script>
   </head>
-  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white relative bg-slate-50 text-slate-800">
+  <body class="min-h-full flex flex-col font-sans antialiased selection:bg-teal-500 selection:text-white relative bg-slate-50 text-slate-800 dark:bg-[#071311] dark:text-slate-100 transition-colors duration-200">
     <GlobalProgressLoader />
     <NeuralBackground />
     <Navbar client:load />
