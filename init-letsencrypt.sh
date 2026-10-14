@@ -2,17 +2,17 @@
 # ==============================================================================
 # Script de Inicialización SSL Certbot & Nginx para Clínica Horizonte
 # Dominios:
-#   - api-clinica-horizonte.benjamincodes.cl
-#   - clinica-horizonte.benjamincodes.cl
+#   - api-clinica-horizonte.benjamincodes.com
+#   - clinica-horizonte.benjamincodes.com
 # Compatible con: Amazon Linux 2023, Ubuntu 22.04/24.04, Debian
 # ==============================================================================
 
 set -euo pipefail
 
-DOMAINS=("api-clinica-horizonte.benjamincodes.cl" "clinica-horizonte.benjamincodes.cl")
+DOMAINS=("api-clinica-horizonte.benjamincodes.com" "clinica-horizonte.benjamincodes.com")
 RSA_KEY_SIZE=4096
 DATA_PATH="./certbot"
-EMAIL="contacto@benjamincodes.cl"
+EMAIL="contacto@benjamincodes.com"
 STAGING=0 # Cambiar a 1 si deseas probar la emisión sin consumir cuota de Let's Encrypt
 
 echo "======================================================================"
@@ -103,8 +103,8 @@ fi
 
 echo "======================================================================"
 echo " ¡Despliegue y configuración SSL finalizada con éxito!"
-echo " Frontend Web: https://clinica-horizonte.benjamincodes.cl"
-echo " Backend API:  https://api-clinica-horizonte.benjamincodes.cl/api/v1/health"
-echo " Swagger UI:   https://api-clinica-horizonte.benjamincodes.cl/api/docs"
+echo " Frontend Web: https://clinica-horizonte.benjamincodes.com"
+echo " Backend API:  https://api-clinica-horizonte.benjamincodes.com/api/v1/health"
+echo " Swagger UI:   https://api-clinica-horizonte.benjamincodes.com/api/docs"
 echo "======================================================================"
 
