@@ -10,7 +10,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-clinica_admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ClinicaHorizonteSecurePass2026!}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Solo accesible localmente en el host para evitar exposición pública en EC2
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -34,10 +35,13 @@ services:
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
       JWT_SECRET: ${JWT_SECRET:-clinica-horizonte-ultra-secure-jwt-secret-key-32-chars-minimum}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-8h}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://clinica-horizonte.tudominio.com}
       SEED_ON_STARTUP: ${SEED_ON_STARTUP:-true}
+    expose:
+      - "3000"
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
+      # Expuesto solo en localhost; Nginx gestiona el tráfico público en los puertos 80/443
+      - "127.0.0.1:${BACKEND_PORT:-3000}:3000"
     depends_on:
       database:
         condition: service_healthy
@@ -59,12 +63,42 @@ services:
       HOST: 0.0.0.0
       PORT: 4321
       API_URL: http://backend:3000
-      PUBLIC_API_URL: ${PUBLIC_API_URL:-}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api-clinica-horizonte.tudominio.com}
+    expose:
+      - "4321"
     ports:
-      - "${FRONTEND_PORT:-4321}:4321"
+      # Expuesto solo en localhost; Nginx gestiona el tráfico público en los puertos 80/443
+      - "127.0.0.1:${FRONTEND_PORT:-4321}:4321"
     depends_on:
       backend:
         condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: clinica_horizonte_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    # Recarga periódica automática (cada 24h) para aplicar certificados renovados sin interrumpir
+    command: '/bin/sh -c ''while :; do sleep 24h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+    depends_on:
+      - backend
+      - frontend
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: clinica_horizonte_certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    # Intenta renovar automáticamente certificados cada 12 horas en segundo plano
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   migration:
     build:
