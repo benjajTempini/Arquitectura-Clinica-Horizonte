@@ -37,6 +37,7 @@ let activeRequestsCount = 0;
 
 function resolveEndpointMessage(endpoint: string, method = 'GET'): string {
   if (endpoint.startsWith('/auth/login')) return 'Estamos trabajando para su comodidad y salud. Validando credenciales seguras...';
+  if (endpoint.startsWith('/auth/register')) return 'Estamos trabajando para su comodidad y salud. Creando cuenta de paciente...';
   if (endpoint.startsWith('/health')) return 'Estamos trabajando para su comodidad y salud. Verificando estado de la red asistencial...';
   if (endpoint.startsWith('/appointments')) {
     if (method === 'POST') return 'Estamos trabajando para su comodidad y salud. Validando ausencia de solapamiento y agendando...';
@@ -134,6 +135,17 @@ export async function apiRequest<T = any>(endpoint: string, options: RequestInit
 export const authService = {
   login: (credentials: { email: string; password: string }) =>
     apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  register: (patientData: {
+    nationalId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    phone: string;
+    birthDate?: string;
+    gender?: string;
+  }) =>
+    apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(patientData) }),
 };
 
 export const healthService = {

@@ -7,11 +7,17 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [redirectPath, setRedirectPath] = useState('');
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const red = params.get('redirect');
+    if (red) setRedirectPath(red);
+
     if (params.get('expired') === 'true') {
       setInfoMessage('Tu sesión ha expirado o necesitas identificarte para continuar.');
+    } else if (params.get('reason') === 'booking') {
+      setInfoMessage('Para reservar una hora médica, debes iniciar sesión previamente con tu cuenta.');
     }
   }, []);
 
@@ -126,6 +132,18 @@ export default function LoginForm() {
           )}
         </button>
       </form>
+
+      <div className="mt-6 pt-5 border-t border-slate-100 dark:border-teal-900/60 text-center">
+        <p className="text-xs text-slate-600 dark:text-slate-400">
+          ¿No tienes una cuenta de paciente?{' '}
+          <a
+            href={`/registro${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : ''}`}
+            className="text-blue-600 dark:text-teal-400 hover:underline font-semibold"
+          >
+            Regístrate aquí
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

@@ -44,12 +44,13 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
 
       // Verificación de sesión y roles en rutas protegidas
       (function () {
-        const publicPaths = ['/', '/login', '/reservar-hora', '/consultar-cita'];
+        const publicPaths = ['/', '/login', '/registro', '/consultar-cita'];
         const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
         if (!publicPaths.includes(currentPath)) {
           const token = localStorage.getItem('token');
           if (!token) {
-            window.location.href = '/login?redirect=' + encodeURIComponent(currentPath);
+            const reasonParam = currentPath === '/reservar-hora' ? '&reason=booking' : '';
+            window.location.href = '/login?redirect=' + encodeURIComponent(currentPath) + reasonParam;
             return;
           }
 

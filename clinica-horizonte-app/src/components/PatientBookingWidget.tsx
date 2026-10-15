@@ -26,6 +26,9 @@ export default function PatientBookingWidget() {
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [bookingDate, setBookingDate] = useState(() => {
@@ -49,6 +52,29 @@ export default function PatientBookingWidget() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
+    // 1. Verificar si tiene sesión activa. Si no, redirigir al login
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      setIsAuthenticated(false);
+      window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname) + '&reason=booking';
+      return;
+    }
+
+    // 2. Prellenar datos con el usuario activo si están disponibles
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setCurrentUser(u);
+        const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+        if (fullName) {
+          setPatientName(fullName);
+        }
+        if (u.email) {
+          setPatientEmail(u.email);
+        }
+      } catch {}
+    }
     async function loadData() {
       try {
         const [specs, profs] = await Promise.all([
@@ -166,6 +192,14 @@ export default function PatientBookingWidget() {
     setNameError(null);
     setPhoneError(null);
 
+    // 0. Validar que exista sesión activa
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      setIsAuthenticated(false);
+      window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname) + '&reason=booking';
+      return;
+    }
+
     // 1. Validar RUT estrictamente con formato [1 o 2 digitos].[3 digitos].[3 digitos]-[0-9+k] y DV
     let rutToValidate = patientRut.trim();
     const clean = cleanRut(rutToValidate);
@@ -234,6 +268,35 @@ export default function PatientBookingWidget() {
       setBookingSuccess(newBooking);
     }, 700);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="w-full bg-white dark:bg-[#0c221e] border border-sky-100 dark:border-teal-800/80 rounded-3xl p-8 sm:p-12 text-center space-y-4 shadow-sm animate-fadeIn max-w-lg mx-auto">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <svg className="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Autenticación Requerida</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+            Para reservar una hora médica en Clínica Horizonte es necesario iniciar sesión. Te estamos redirigiendo al portal de acceso seguro...
+          </p>
+        </div>
+        <div className="pt-2">
+          <a
+            href="/login?redirect=/reservar-hora&reason=booking"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition shadow-sm"
+          >
+            <span>Ir a Iniciar Sesión</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-white border border-sky-100 rounded-3xl p-6 sm:p-8 shadow-sm">
@@ -454,9 +517,17 @@ export default function PatientBookingWidget() {
 
             {/* Paso 4: Identificación del Paciente */}
             <div className="pt-2 border-t border-slate-100">
-              <span className="text-xs font-mono font-semibold text-slate-600 uppercase tracking-wider block mb-3">
-                2. Datos del Paciente Titular
-              </span>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span className="text-xs font-mono font-semibold text-slate-600 uppercase tracking-wider block">
+                  2. Datos del Paciente Titular
+                </span>
+                {currentUser && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Sesión Activa: {currentUser.firstName} {currentUser.lastName}</span>
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-[11px] font-medium text-slate-600 mb-1">RUT Paciente *</label>
