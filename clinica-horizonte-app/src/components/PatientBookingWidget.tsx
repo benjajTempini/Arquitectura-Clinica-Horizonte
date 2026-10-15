@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { isValidNationalId, formatRut } from '../utils/rut.util';
+import { validateChileanRut, validatePersonName, formatRut, cleanRut } from '../utils/rut.util';
 import { specialtiesService, professionalsService } from '../services/api';
 
 interface Specialty {
@@ -42,6 +42,11 @@ export default function PatientBookingWidget() {
   const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittingStage, setSubmittingStage] = useState('Estamos trabajando para su comodidad y salud...');
+
+  // Estados de error de validación
+  const [rutError, setRutError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -100,19 +105,91 @@ export default function PatientBookingWidget() {
     }
   };
 
+  const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    // Permitir solo números, puntos, guión y k/K
+    const sanitized = raw.replace(/[^0-9kK.-]/g, '');
+    setPatientRut(sanitized);
+    if (rutError) setRutError(null);
+  };
+
+  const handleRutBlur = () => {
+    const trimmed = patientRut.trim();
+    if (!trimmed) return;
+
+    // Si el usuario ingresó números sin puntos (ej: 12345678-k o 12345678k), formatear automáticamente
+    const clean = cleanRut(trimmed);
+    let candidate = trimmed;
+    if (clean.length >= 7 && clean.length <= 9 && !trimmed.includes('.')) {
+      candidate = formatRut(clean);
+      setPatientRut(candidate);
+    }
+
+    const val = validateChileanRut(candidate);
+    if (!val.valid) {
+      setRutError(val.error || 'RUT inválido');
+    } else {
+      setRutError(null);
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Si el usuario intentó ingresar números, los bloqueamos y advertimos
+    if (/\d/.test(val)) {
+      setNameError('El nombre no puede contener números.');
+      setPatientName(val.replace(/\d/g, ''));
+      return;
+    }
+    setPatientName(val);
+    if (nameError) setNameError(null);
+  };
+
+  const handleNameBlur = () => {
+    if (!patientName.trim()) return;
+    const val = validatePersonName(patientName);
+    if (!val.valid) {
+      setNameError(val.error || 'Nombre inválido');
+    } else {
+      setNameError(null);
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPatientPhone(e.target.value);
+    if (phoneError) setPhoneError(null);
+  };
+
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanRut = patientRut.replace(/\./g, '').trim().toUpperCase();
-    if (!cleanRut || !isValidNationalId(cleanRut)) {
-      alert('Por favor ingrese un RUT chileno válido (ej: 15.824.912-K) o documento oficial.');
+    setRutError(null);
+    setNameError(null);
+    setPhoneError(null);
+
+    // 1. Validar RUT estrictamente con formato [1 o 2 digitos].[3 digitos].[3 digitos]-[0-9+k] y DV
+    let rutToValidate = patientRut.trim();
+    const clean = cleanRut(rutToValidate);
+    if (clean.length >= 7 && clean.length <= 9 && !rutToValidate.includes('.')) {
+      rutToValidate = formatRut(clean);
+      setPatientRut(rutToValidate);
+    }
+
+    const rutVal = validateChileanRut(rutToValidate);
+    if (!rutVal.valid) {
+      setRutError(rutVal.error || 'Por favor ingrese un RUT chileno válido (ej: 12.345.678-5 o 9.876.543-K).');
       return;
     }
-    if (!patientName.trim() || patientName.trim().length < 2) {
-      alert('Por favor ingrese el nombre completo del paciente.');
+
+    // 2. Validar Nombre Completo (sin números, solo letras)
+    const nameVal = validatePersonName(patientName);
+    if (!nameVal.valid) {
+      setNameError(nameVal.error || 'Por favor ingrese un nombre válido (sin números).');
       return;
     }
+
+    // 3. Validar Teléfono
     if (!patientPhone.trim() || patientPhone.trim().length < 8) {
-      alert('Por favor ingrese un teléfono de contacto válido.');
+      setPhoneError('Por favor ingrese un teléfono de contacto válido (mínimo 8 dígitos).');
       return;
     }
 
@@ -123,9 +200,9 @@ export default function PatientBookingWidget() {
     const newBooking = {
       code: bookingCode,
       patientName: patientName.trim(),
-      patientRut: formatRut(cleanRut) || cleanRut,
-      patientPhone,
-      patientEmail,
+      patientRut: rutToValidate,
+      patientPhone: patientPhone.trim(),
+      patientEmail: patientEmail.trim(),
       specialty: specialty?.name,
       doctor: doctor?.name,
       box: doctor?.box,
@@ -388,9 +465,22 @@ export default function PatientBookingWidget() {
                     required
                     placeholder="12.345.678-9"
                     value={patientRut}
-                    onChange={(e) => setPatientRut(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-blue-500 font-mono transition"
+                    onChange={handleRutChange}
+                    onBlur={handleRutBlur}
+                    className={`w-full bg-slate-50 border rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none font-mono transition ${
+                      rutError
+                        ? 'border-red-500 bg-red-50/30 focus:border-red-500 focus:ring-1 focus:ring-red-500'
+                        : 'border-slate-200 focus:border-blue-500'
+                    }`}
                   />
+                  {rutError && (
+                    <p className="text-[11px] text-red-600 mt-1 font-medium flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {rutError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -400,9 +490,22 @@ export default function PatientBookingWidget() {
                     required
                     placeholder="Ej: Sofía Contreras Díaz"
                     value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-blue-500 transition"
+                    onChange={handleNameChange}
+                    onBlur={handleNameBlur}
+                    className={`w-full bg-slate-50 border rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none transition ${
+                      nameError
+                        ? 'border-red-500 bg-red-50/30 focus:border-red-500 focus:ring-1 focus:ring-red-500'
+                        : 'border-slate-200 focus:border-blue-500'
+                    }`}
                   />
+                  {nameError && (
+                    <p className="text-[11px] text-red-600 mt-1 font-medium flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {nameError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -412,9 +515,21 @@ export default function PatientBookingWidget() {
                     required
                     placeholder="+56 9 8765 4321"
                     value={patientPhone}
-                    onChange={(e) => setPatientPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-blue-500 font-mono transition"
+                    onChange={handlePhoneChange}
+                    className={`w-full bg-slate-50 border rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none font-mono transition ${
+                      phoneError
+                        ? 'border-red-500 bg-red-50/30 focus:border-red-500 focus:ring-1 focus:ring-red-500'
+                        : 'border-slate-200 focus:border-blue-500'
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="text-[11px] text-red-600 mt-1 font-medium flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {phoneError}
+                    </p>
+                  )}
                 </div>
 
                 <div>

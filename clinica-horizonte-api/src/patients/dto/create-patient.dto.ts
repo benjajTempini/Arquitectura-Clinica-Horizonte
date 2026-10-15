@@ -25,6 +25,9 @@ export class CreatePatientDto {
   @IsString()
   @MinLength(2, { message: 'El nombre debe tener al menos 2 caracteres.' })
   @MaxLength(100, { message: 'El nombre no puede superar 100 caracteres.' })
+  @Matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/, {
+    message: 'El nombre solo puede contener letras y espacios (sin números ni caracteres especiales).',
+  })
   firstName: string;
 
   @ApiProperty({ example: 'Mendoza Peña' })
@@ -32,6 +35,9 @@ export class CreatePatientDto {
   @IsString()
   @MinLength(2, { message: 'Los apellidos deben tener al menos 2 caracteres.' })
   @MaxLength(100, { message: 'Los apellidos no pueden superar 100 caracteres.' })
+  @Matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/, {
+    message: 'Los apellidos solo pueden contener letras y espacios (sin números ni caracteres especiales).',
+  })
   lastName: string;
 
   @ApiProperty({ example: '1982-04-15', description: 'Fecha de nacimiento YYYY-MM-DD' })

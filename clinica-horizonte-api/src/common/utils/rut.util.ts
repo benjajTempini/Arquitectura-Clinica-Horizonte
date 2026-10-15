@@ -16,6 +16,11 @@ export function formatRut(rut: string): string {
   return `${body}-${dv}`;
 }
 
+export function isValidRutPattern(value: string): boolean {
+  if (!value || typeof value !== 'string') return false;
+  return /^(\d{1,2})\.(\d{3})\.(\d{3})-([\dkK])$/.test(value.trim());
+}
+
 export function isValidRutFormat(value: string): boolean {
   if (!value || typeof value !== 'string') return false;
   const clean = cleanRut(value);
@@ -47,11 +52,17 @@ export function isValidRutDv(rut: string): boolean {
 export function isValidNationalId(id: string): boolean {
   if (!id || typeof id !== 'string') return false;
   const trimmed = id.trim();
-  // Si tiene estructura de RUT chileno (con o sin puntos/guion)
-  if (/^(\d{1,3}(\.\d{3}){1,2}-[\dkK]|\d{7,8}-[\dkK]|\d{7,8}[\dkK])$/i.test(trimmed)) {
-    return isValidRutFormat(trimmed);
+  // Si contiene puntos o guión o parece un RUT chileno
+  if (trimmed.includes('.') || trimmed.includes('-') || /^\d+[0-9kK]$/i.test(trimmed)) {
+    // Si incluye puntos, debe cumplir exactamente el formato [1 o 2 dígitos].[3 dígitos].[3 dígitos]-[0-9 o K]
+    if (trimmed.includes('.') && !isValidRutPattern(trimmed)) {
+      return false;
+    }
+    const clean = cleanRut(trimmed);
+    if (!isValidRutFormat(clean)) return false;
+    return isValidRutDv(clean);
   }
-  // Si es pasaporte o documento extranjero oficial (5 a 20 alfanuméricos)
+  // Si es pasaporte o documento extranjero oficial (5 a 20 caracteres alfanuméricos sin puntos)
   return /^[A-Za-z0-9-]{5,20}$/.test(trimmed);
 }
 
