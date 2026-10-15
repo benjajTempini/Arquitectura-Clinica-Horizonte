@@ -63,6 +63,10 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
               const isAdmin = roles.includes('ADMIN');
 
               if (!isAdmin) {
+                if (currentPath === '/medicos') {
+                  window.location.href = '/dashboard?denied=medicos';
+                  return;
+                }
                 const isDoctor = roles.includes('DOCTOR') || roles.includes('NURSE');
                 const isReception = roles.includes('RECEPTIONIST') || roles.includes('ADMINISTRATIVE');
                 const isSupport = roles.includes('EXTERNAL_SUPPORT');

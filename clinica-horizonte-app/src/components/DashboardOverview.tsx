@@ -891,7 +891,26 @@ export default function DashboardOverview() {
           </div>
 
           {/* Módulos Principales de la Institución */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a
+              href="/medicos"
+              className="p-5 rounded-2xl bg-white border border-sky-100 hover:border-sky-300 shadow-xs hover:shadow-md transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-purple-50 text-purple-700 group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base group-hover:text-purple-700 transition-colors">
+                    Gestión de Médicos
+                  </h3>
+                  <p className="text-xs text-slate-500">Altas, asignación de box y desvinculación Ley 20.584</p>
+                </div>
+              </div>
+            </a>
+
             <a
               href="/agenda"
               className="p-5 rounded-2xl bg-white border border-sky-100 hover:border-sky-300 shadow-xs hover:shadow-md transition group"

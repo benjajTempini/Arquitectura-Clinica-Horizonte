@@ -170,9 +170,9 @@ export const patientsService = {
 };
 
 export const professionalsService = {
-  list: async () => {
+  list: async (includeInactive = false) => {
     try {
-      const res = await apiRequest('/professionals');
+      const res = await apiRequest(`/professionals${includeInactive ? '?includeInactive=true' : ''}`);
       if (Array.isArray(res)) return res;
       return [];
     } catch {
@@ -188,6 +188,19 @@ export const professionalsService = {
       return { professionalId: id, date, slots: [] };
     }
   },
+  create: (data: {
+    licenseNumber: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    specialtyId: string;
+    box?: string;
+    password?: string;
+  }) =>
+    apiRequest('/professionals', { method: 'POST', body: JSON.stringify(data) }),
+  updateStatus: (id: string, isActive: boolean) =>
+    apiRequest(`/professionals/${id}/status`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
 };
 
 export const specialtiesService = {

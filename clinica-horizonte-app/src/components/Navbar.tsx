@@ -142,6 +142,9 @@ export default function Navbar() {
                     <a href="/dashboard" className="px-3 py-2 rounded-lg text-xs font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 transition">
                       Dashboard General
                     </a>
+                    <a href="/medicos" className="px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-blue-600 hover:bg-sky-50 transition">
+                      Gestión Médicos
+                    </a>
                     <a href="/agenda" className="px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-blue-600 hover:bg-sky-50 transition">
                       Agenda & Citas
                     </a>
@@ -343,6 +346,7 @@ export default function Navbar() {
 
                 {isAdmin && (
                   <>
+                    <a href="/medicos" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-sky-50">Gestión Médicos</a>
                     <a href="/agenda" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-sky-50">Agenda & Citas</a>
                     <a href="/pacientes" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-sky-50">Pacientes</a>
                     <a href="/atencion-clinica" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-sky-50">Atención Médica</a>
