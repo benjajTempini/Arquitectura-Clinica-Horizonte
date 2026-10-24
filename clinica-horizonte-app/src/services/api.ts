@@ -33,49 +33,9 @@ const getAuthHeaders = () => {
   return headers;
 };
 
-let activeRequestsCount = 0;
-
-function resolveEndpointMessage(endpoint: string, method = 'GET'): string {
-  if (endpoint.startsWith('/auth/login')) return 'Estamos trabajando para su comodidad y salud. Validando credenciales seguras...';
-  if (endpoint.startsWith('/auth/register')) return 'Estamos trabajando para su comodidad y salud. Creando cuenta de paciente...';
-  if (endpoint.startsWith('/health')) return 'Estamos trabajando para su comodidad y salud. Verificando estado de la red asistencial...';
-  if (endpoint.startsWith('/appointments')) {
-    if (method === 'POST') return 'Estamos trabajando para su comodidad y salud. Validando ausencia de solapamiento y agendando...';
-    if (endpoint.includes('/availability')) return 'Estamos trabajando para su comodidad y salud. Calculando franjas horarias disponibles...';
-    return 'Estamos trabajando para su comodidad y salud. Sincronizando agenda médica...';
-  }
-  if (endpoint.startsWith('/patients')) {
-    if (method === 'POST') return 'Estamos trabajando para su comodidad y salud. Registrando ficha del paciente...';
-    return 'Estamos trabajando para su comodidad y salud. Consultando registros de pacientes...';
-  }
-  if (endpoint.startsWith('/clinical-care')) return 'Estamos trabajando para su comodidad y salud. Guardando atención y diagnósticos CIE-10...';
-  if (endpoint.startsWith('/payments')) return 'Estamos trabajando para su comodidad y salud. Procesando comprobante y conciliación Fonasa/Isapre...';
-  if (endpoint.startsWith('/audit')) return 'Estamos trabajando para su comodidad y salud. Consultando bitácora de trazabilidad sanitaria...';
-  return 'Estamos trabajando para su comodidad y salud...';
-}
-
-function notifyStart(message: string) {
-  if (typeof window !== 'undefined') {
-    activeRequestsCount++;
-    window.dispatchEvent(new CustomEvent('clinical:loading:start', { detail: { message } }));
-  }
-}
-
-function notifyEnd() {
-  if (typeof window !== 'undefined') {
-    activeRequestsCount = Math.max(0, activeRequestsCount - 1);
-    if (activeRequestsCount === 0) {
-      window.dispatchEvent(new CustomEvent('clinical:loading:end'));
-    }
-  }
-}
-
 export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const baseUrl = getApiBaseUrl();
   const url = `${baseUrl}${endpoint}`;
-
-  const method = (options.method || 'GET').toUpperCase();
-  notifyStart(resolveEndpointMessage(endpoint, method));
 
   const config: RequestInit = {
     ...options,
@@ -123,8 +83,6 @@ export async function apiRequest<T = any>(endpoint: string, options: RequestInit
       message: 'No fue posible comunicarse con el servicio backend de Clínica Horizonte.',
       details: [error.message],
     };
-  } finally {
-    notifyEnd();
   }
 }
 

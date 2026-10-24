@@ -49,9 +49,6 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined' && (window as any).ClinicalLoader) {
-      (window as any).ClinicalLoader.start('Cerrando sesión de forma segura...');
-    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/';

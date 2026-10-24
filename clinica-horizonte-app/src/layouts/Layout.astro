@@ -2,7 +2,6 @@
 import Navbar from '../components/Navbar';
 import NeuralBackground from '../components/NeuralBackground.astro';
 import Footer from '../components/Footer.astro';
-import GlobalProgressLoader from '../components/GlobalProgressLoader.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -101,7 +100,6 @@ const publicApiUrl = import.meta.env.PUBLIC_API_URL || process.env.PUBLIC_API_UR
     </script>
   </head>
   <body class="min-h-full flex flex-col font-sans antialiased selection:bg-teal-500 selection:text-white relative bg-slate-50 text-slate-800 dark:bg-[#071311] dark:text-slate-100 transition-colors duration-200">
-    <GlobalProgressLoader />
     <NeuralBackground />
     <Navbar client:load />
 
